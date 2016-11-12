@@ -71,3 +71,12 @@ See my [Self](./Markdown.md) page for details.
 <http://example.com/>
 
 [Google]: http://google.com/ "Google"
+
+--------------------------------------
+# 表格
+编码  |名称   |备注
+--|---|--
+CODE001  |错误1   |经常发生
+CODE002  |错误2   |
+CODE003  |错误3   |很少发生
+SUCCESS  |成功    |
