@@ -1,5 +1,11 @@
+---
+author: "Chenmx"
+date: "2016-11-12 23:15"
+---
+
 Markdown教程
 =======================================
+
 
 Markdown 实例
 ---------------------------------------
@@ -79,4 +85,4 @@ See my [Self](./Markdown.md) page for details.
 CODE001  |错误1   |经常发生
 CODE002  |错误2   |
 CODE003  |错误3   |很少发生
-SUCCESS  |成功    | 
+SUCCESS  |成功    |
