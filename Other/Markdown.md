@@ -6,7 +6,6 @@ date: "2016-11-12 23:15"
 Markdown教程
 =======================================
 
-
 Markdown 实例
 ---------------------------------------
 
@@ -60,6 +59,12 @@ __double underscores__
 &nbsp;&nbsp;&nbsp;&nbsp;`System.out.println("HelloWord!");`
 `}`
 
+``` java
+public static void main(String[] args) {
+    System.out.println("HelloWord!");
+}
+```
+
 A single backtick in a code span: `` ` ``
 
 --------------------------------------
@@ -76,13 +81,42 @@ See my [Self](./Markdown.md) page for details.
 ## 简短的链接
 <http://example.com/>
 
-[Google]: http://google.com/ "Google"
-
 --------------------------------------
 # 表格
 编码  |名称   |备注
---|---|--
-CODE001  |错误1   |经常发生
-CODE002  |错误2   |
+:--:|:---|:--
+CODE001  |错误001   |经常发生
+CODE002  |错误2   |少
 CODE003  |错误3   |很少发生
 SUCCESS  |成功    |
+
+--------------------------------------
+# 脚注
+使用 [^Google] 表示注脚。
+
+--------------------------------------
+# 复选框
+- [ ] 茄子
+- [x] 萝卜
+
+--------------------------------------
+# 流程图
+
+```flow
+st=>start: Start
+e=>end
+op=>operation: My Operation
+cond=>condition: Yes or No?
+
+st->op->cond
+cond(yes)->e
+cond(no)->op
+```
+
+```sequence
+Alice->Bob: Hello Bob, how are you?
+Note right of Bob: Bob thinks
+Bob-->Alice: I am good thanks!
+```
+
+[Google]: http://google.com/ "Google"
