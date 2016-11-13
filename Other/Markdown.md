@@ -2,7 +2,24 @@
 author: "Chenmx"
 date: "2016-11-12 23:15"
 ---
+<!-- TOC depthFrom:1 depthTo:6 withLinks:1 updateOnSave:1 orderedList:0 -->
 
+- [引用](#引用)
+	- [第一种方式](#第一种方式)
+	- [第二种方式](#第二种方式)
+- [强调](#强调)
+- [列表](#列表)
+- [代码](#代码)
+- [链接](#链接)
+	- [url超链接](#url超链接)
+	- [图片链接](#图片链接)
+	- [简短的链接](#简短的链接)
+- [表格](#表格)
+- [脚注](#脚注)
+- [复选框](#复选框)
+- [流程图](#流程图)
+
+<!-- /TOC -->
 Markdown教程
 =======================================
 
@@ -60,6 +77,9 @@ __double underscores__
 `}`
 
 ``` java
+/**
+ * The main function of java class
+ */
 public static void main(String[] args) {
     System.out.println("HelloWord!");
 }
