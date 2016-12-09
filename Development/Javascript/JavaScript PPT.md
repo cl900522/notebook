@@ -11,7 +11,7 @@ number    | 数字           |
 boolean   | 布尔           |
 undefined | 未定义          | 使用var声明变量但未对其加以初始化时，这个变量的值就是undefined
 null      | 空            |
-object    | 对象,是一种复杂数据类型 |
+object    | 对象,是一种复杂数据类型,Date Function. RegExp都是继承自Object |
 
 1. **数组和函数不是不是**
 2. **null值表示一个空对象指针，而这也正是使用typeof操作符检测null时会返回"object"**
@@ -138,4 +138,72 @@ object    | 对象,是一种复杂数据类型 |
     for (var i=0; i<10; i++) {
         setTimeout(createConsole(i), 10);
     }
+```
+
+## 面向对象
+### 类和继承
+javascript没有类的定义，而是通过函数以及原型链来实现类和继承的概念
+```javascript
+    function Person() {
+        this.name;
+        this.birthday;
+    };
+    function Engineer() {
+        this.major;
+    };
+    Engineer.prototype = new Person();
+    var xiaoming = new Engineer();
+    console.log(xiaoming instanceof Engineer);
+    console.log(xiaoming instanceof Person);
+    xiaoming.name = "xm";
+    xiaoming.age = 22;
+    xiaoming.major = "Android";
+    console.log(xiaoming);
+```
+
+### 其他继承实现方式
+1. 对象冒充
+2. call()方法
+3. apply()方法
+**可实现多继承**
+**都无法通过instanceof来判断继承的上级类型**
+```javascript
+    function Base1() {
+        this.name;
+        this.say = function() {
+            console.log("name=" + this.name);
+        }
+    }
+    function Base2() {
+        this.age;
+        this.say = function() {
+            console.log("age=" + this.age);
+        }
+    }
+    function ClassZ() {
+        this.newMethod = Base1;
+        this.newMethod();
+        delete this.newMethod;
+
+        this.newMethod = Base2;
+        this.newMethod();
+        delete this.newMethod;
+    }
+    var a = new ClassZ();
+    a.name = "a";
+    a.age = 12;
+    a.say(); //"a"
+    console.log(a instanceof ClassZ); //true
+    console.log(a instanceof Base1); //false
+    console.log(a instanceof Base2); //false
+
+    // call and apply
+    var obj = new Object();
+    Base1.call(obj);
+    //Base1.apply(obj);
+    obj.name = "obj";
+    obj.age = 12;
+    obj.say(); //"a"
+    console.log(obj instanceof Base1); //false
+    //console.log(obj instanceof Base2); //false
 ```
