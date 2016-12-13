@@ -3,7 +3,7 @@
 >JavaScript 是唯一一门可以先用后学的编程语言(也许还包括 CSS 和 HTML)。
 
 ## 基本语法
-### 基础类型
+### 内置类型
 > 除了null,可以通过typeof运算符识别
 
 类型        | 名称           | 备注
@@ -16,8 +16,9 @@ null      | 空            |
 object    | 对象,是一种复杂数据类型,Date Function. RegExp都是继承自Object |
 
 1. **数组和函数不是不是**
-2. **null值表示一个空对象指针，而这也正是使用typeof操作符检测null时会返回"object"**
+2. **null值表示一个空对象指针，而这也正是使用typeof操作符检测null时会返回"object"**正确的返回结果应该是 "null"，但这个 bug 由来已久，在 JavaScript 中已经存在了将近二十年，也许永远也不会修复，因为这牵涉到太多的 Web 系统，“修复”它会产生更多的 bug，令许多系统无法正常工作。
 3. **undefined值是派生自null值的，因此ECMA-262规定对它们的相等性测试要返回true,管null和undefined有这样的关系，但它们的用途完全不同**(undefined == null)
+4. typeof function a(){} === "function"; 这样看来，function（函数）也是 JavaScript 的一个内置类型。然而查阅规范就会知道，它实际上是 object 的一个“子类型”。
 
 ### 数据对比和转换
 ```javascript
