@@ -25,6 +25,11 @@ object    | 对象,是一种复杂数据类型,Date Function. RegExp都是继承
     var value = 12;
     console.log(value == "12"); //true
     console.log(value === "12"); //false
+
+    var num1 = parseInt("a");
+    var num2 = parseInt("a");
+    console.log(num1 == num2); //false
+    console.log(isNaN(num1)); //true
 ```
 
 ```javascript
@@ -56,6 +61,24 @@ object    | 对象,是一种复杂数据类型,Date Function. RegExp都是继承
     console.log(result); //true
 ```
 
+```javascript
+    var a = {
+        name: "xiaoming",
+        age: 12,
+        toString: function() {
+            return this.name;
+        },
+        valueOf: function() {
+            //对比优先级更高
+            return this.age;
+        }
+    };
+    console.log(a == "xiaoming");//false
+    console.log(a == 12);//true
+
+    delete a.valueOf;
+    console.log(a == "xiaoming");//true
+```
 ### 作用域
 >**javascript只有函数作用域和全局作用域，函数内部变量申明不加var即可提升变量作用域为全局**
 
@@ -96,6 +119,7 @@ object    | 对象,是一种复杂数据类型,Date Function. RegExp都是继承
         arg++;
         alert(arg);
     }
+    fun1(1);
     fun1(1, autIncrease);
 ```
 
