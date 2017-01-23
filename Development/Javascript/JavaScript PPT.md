@@ -65,8 +65,8 @@ object    | 对象,是一种复杂数据类型,Date Function. RegExp都是继承
         console.log(globe);
     }
     function fun2() {
-        var temp = 12;
-        console.log(temp);
+        var globe = 12;
+        console.log(globe);
     }
     function fun3() {
         globe = 10;
