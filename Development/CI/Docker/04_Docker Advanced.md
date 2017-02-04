@@ -162,7 +162,7 @@ $ sudo docker run -t -i -d --volumes-from test --name test2 ubuntu:14.04 /bin/ba
 ```
 $ sudo docker run -t -i -d --volumes-from test1 --name test3 ubuntu:14.04 /bin/bash
 ```
-![共享Volumn](、images/2017/02/volumn1.png)
+![共享Volumn](/images/2017/02/volumn1.png)
 ### 备份、恢复或迁移数据卷
 备份
 ```
@@ -188,7 +188,7 @@ $ sudo docker run -t -i -d -v /test --name test4 ubuntu:14.04  /bin/bash $ sudo 
 Volume 只有在下列情况下才能被删除：
 1. docker rm -v删除容器时添加了-v选项
 2. docker run --rm运行容器时添加了--rm选项
-否则，会在/var/lib/docker/vfs/dir目录中遗留很多不明目录。
+否则，会在/var/lib/docker/volumns/目录中遗留很多不明目录。
 
 ## 链接容器
 docker 允许把多个容器连接在一起，相互交互信息。docker 链接会创建一种容器父子级别的关系，其中父容器可以看到其子容器提供的信息。
@@ -201,7 +201,7 @@ docker 允许把多个容器连接在一起，相互交互信息。docker 链接
 可以通过--name选项给容器自定义命名：
 ```
 $ sudo docker run -d -t -i --name test ubuntu:14.04 bash
-$ sudo docker  inspect --format="{{ .Nmae }}" test
+$ sudo docker  inspect --format="{{ .Name }}" test
 /test
 ```
 >注：容器名称必须唯一，即你只能命名一个叫test的容器。如果你想复用容器名，则必须在创建新的容器前通过docker rm删除旧的容器或者创建容器时添加--rm选项。
