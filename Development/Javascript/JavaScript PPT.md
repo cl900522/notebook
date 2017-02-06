@@ -114,8 +114,8 @@ var jone = new Persion("Jone", "Doe", 22);
         console.log(globe);
     }
     function fun2() {
-        var temp = 12;
-        console.log(temp);
+        var globe = 12;
+        console.log(globe);
     }
     function fun3() {
         globe = 10;
