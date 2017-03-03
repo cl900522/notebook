@@ -95,8 +95,8 @@ ADD复制本地主机文件、目录或者远程文件 URLS 从 并且添加到�
 ADD hom* /mydir/        # adds all files starting with "hom"
 ADD hom?.txt /mydir/    # ? is replaced with any single character
 ```
-1. 路径必须是绝对路径，如果 不存在，会自动创建对应目录
-2. 路径必须是 Dockerfile 所在路径的相对路径
+1. <dest>路径必须是绝对路径，如果 不存在，会自动创建对应目录
+2. <src>路径必须是 Dockerfile 所在路径的相对路径
 3. 如果是一个目录，只会复制目录下的内容，而目录本身则不会被复制
 
 **ENTRYPOINT**

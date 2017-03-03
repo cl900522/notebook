@@ -93,12 +93,17 @@ Commands:
     run       Run a command in a new container              # 创建一个新的容器并运行一个命令
     save      Save an image to a tar archive                # 保存一个镜像为一个 tar 包[对应 load]
     search    Search for an image on the Docker Hub         # 在 docker hub 中搜索镜像
+    service   Manage Docker services
     start     Start a stopped containers                    # 启动容器
+    stats     Display a live stream of container(s) resource usage statistics
     stop      Stop a running containers                     # 停止容器
+    swarm     Manage Docker Swarm
     tag       Tag an image into a repository                # 给源中镜像打标签
     top       Lookup the running processes of a container   # 查看容器中运行的进程信息
     unpause   Unpause a paused container                    # 取消暂停容器
+    update    Update configuration of one or more containers
     version   Show the docker version information           # 查看 docker 版本号
+    volume    Manage Docker volumes
     wait      Block until a container stops, then print its exit code   # 截取容器停止时的退出状态值
 
 Run 'docker COMMAND --help' for more information on a command.
