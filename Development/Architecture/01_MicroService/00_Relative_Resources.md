@@ -3,6 +3,8 @@ https://www.youtube.com/watch?v=wgdBVIX9ifA
 
 Microservices articles
 https://martinfowler.com/articles/microservices.html
+Microservices articles(中文翻译)
+http://blog.cuicc.com/blog/2015/07/22/microservices/
 
 Microservices Resource Guide
 https://martinfowler.com/microservices/#what
