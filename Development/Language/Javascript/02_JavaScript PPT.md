@@ -20,11 +20,42 @@ object    | 对象,是一种复杂数据类型,Date Function. RegExp都是继承
 3. **undefined值是派生自null值的，因此ECMA-262规定对它们的相等性测试要返回true,管null和undefined有这样的关系，但它们的用途完全不同**(undefined == null)
 4. typeof function a(){} === "function"; 这样看来，function（函数）也是 JavaScript 的一个内置类型。然而查阅规范就会知道，它实际上是 object 的一个“子类型”。
 
+```javascript
+    var person=new Object(); //var persion = new Object();
+    person.firstname="John";
+    person.lastname="Doe";
+    person.say = function(words) {
+        alert(words);
+    }
+
+    var person = {
+        firstname: "John",
+        lastname: "Doe",
+        say: function(words) {
+            alert(words);
+        }
+    };
+```
+
+```javascript
+function Persion(firstname, lastname, age) {
+    this.firstname=firstname;
+    this.lastname=lastname;
+    this.age=age;
+}
+var jone = new Persion("Jone", "Doe", 22);
+```
+
 ### 数据对比和转换
 ```javascript
     var value = 12;
     console.log(value == "12"); //true
     console.log(value === "12"); //false
+
+    var num1 = parseInt("a");
+    var num2 = parseInt("a");
+    console.log(num1 == num2); //false
+    console.log(isNaN(num1)); //true
 ```
 
 ```javascript
@@ -56,6 +87,24 @@ object    | 对象,是一种复杂数据类型,Date Function. RegExp都是继承
     console.log(result); //true
 ```
 
+```javascript
+    var a = {
+        name: "xiaoming",
+        age: 12,
+        toString: function() {
+            return this.name;
+        },
+        valueOf: function() {
+            //对比优先级更高
+            return this.age;
+        }
+    };
+    console.log(a == "xiaoming");//false
+    console.log(a == 12);//true
+
+    delete a.valueOf;
+    console.log(a == "xiaoming");//true
+```
 ### 作用域
 >**javascript只有函数作用域和全局作用域，函数内部变量申明不加var即可提升变量作用域为全局**
 
@@ -96,6 +145,7 @@ object    | 对象,是一种复杂数据类型,Date Function. RegExp都是继承
         arg++;
         alert(arg);
     }
+    fun1(1);
     fun1(1, autIncrease);
 ```
 
