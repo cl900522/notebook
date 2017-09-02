@@ -16,3 +16,6 @@ docker run -d -p 8081:8081 --restart always --name nexus -v /web/data/sonatype-w
 
 docker run -ti -d -p 2375:2375 --restart=always --name shipyard-proxy -v /var/run/docker.sock:/var/run/docker.sock -e PORT=2375 shipyard/docker-proxy:latest
 docker run -d -p 9000:9000 -v /var/run/docker.sock:/var/run/docker.sock --name portainer -v /web/data/portainer:/data portainer/portainer
+
+docker pull webcenter/activemq
+docker run --name activemq -p 61616:61616 -e ACTIVEMQ_ADMIN_LOGIN=admin -e ACTIVEMQ_ADMIN_PASSWORD=admin123 --restart=always -d activemq:latest
