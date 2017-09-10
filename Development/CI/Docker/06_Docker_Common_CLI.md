@@ -21,4 +21,4 @@ docker pull webcenter/activemq
 docker run --name activemq -p 61616:61616 -e ACTIVEMQ_ADMIN_LOGIN=admin -e ACTIVEMQ_ADMIN_PASSWORD=admin123 --restart=always -d webcenter/activemq:latest
 
 docker run -d --restart=always --hostname my-rabbit --name main-rabbit -p 5672:5672 rabbitmq:3.6.11-alpine
-docker run -d --restart=always --hostname my-rabbit --name some-rabbit -p 15672:15672 rabbitmq:3.6.11-management-alpine
+docker run -d --restart=always --hostname my-rabbit --name portal-rabbit -p 15672:15672 rabbitmq:3.6.11-management-alpine
