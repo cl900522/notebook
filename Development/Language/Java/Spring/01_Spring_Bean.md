@@ -16,7 +16,7 @@ Bean的完整生命周期经历了各种方法调用，这些方法可以划分�
     这个包括了Bean本身调用的方法和通过配置文件中<bean>的init-method和destroy-method指定的方法
 
 2. Bean级生命周期接口方法
-    这个包括了BeanNameAware, BeanFactoryAware,InitializingBean和DiposableBean这些接口的方法
+    这个包括了BeanNameAware, BeanFactoryAware,InitializingBean和DisposableBean这些接口的方法
 
 3. 容器级生命周期接口方法
     这个包括了InstantiationAwareBeanPostProcessor 和 BeanPostProcessor 这两个接口实现，一般称它们的实现类为“后处理器”。
