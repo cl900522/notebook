@@ -22,8 +22,8 @@ object    | 对象,是一种复杂数据类型,Date Function. RegExp都是继承
 
 ```javascript
     var person=new Object(); //var persion = new Object();
-    person.firstname="John";
-    person.lastname="Doe";
+    person.firstname="John";
+    person.lastname="Doe";
     person.say = function(words) {
         alert(words);
     }
@@ -260,3 +260,12 @@ javascript没有类的定义，而是通过函数以及原型链来实现类和�
     console.log(obj instanceof Base1); //false
     //console.log(obj instanceof Base2); //false
 ```
+
+## Object more
+
+https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Object/defineProperty
+
+## Exception
+## 基于类 vs 基于原型的语言
+
+https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Guide/Details_of_the_Object_Model
