@@ -158,12 +158,14 @@ Java定时任务管理
 ### 分部署部署
 对于单机的任务调度，使用Quartz十分方便。但是在分布式情况下，对于集群中每台机器都会执行任务，从而造成了重复执行任务的问题。Quart不仅支持单机任务调度，同时也支持集群中的任务调度。原理如下：在集群中，各个不同的机器公用同一个调度器，调度器按照一定的算法选择集群中某一台机器执行任务。
 ```properties
+#==============================================================
 #Configure Main Scheduler Properties
 #==============================================================
 #配置集群时，quartz调度器的id，由于配置集群时，只有一个调度器，必须保证每个服务器该值都相同，可以不用修改，只要每个ams都一样就行
 org.quartz.scheduler.instanceName = Scheduler1
 #集群中每台服务器自己的id，AUTO表示自动生成，无需修改
 org.quartz.scheduler.instanceId = AUTO
+
 #==============================================================
 #Configure ThreadPool
 #==============================================================
@@ -173,6 +175,7 @@ org.quartz.threadPool.class = org.quartz.simpl.SimpleThreadPool
 org.quartz.threadPool.threadCount = 5
 #quartz线程优先级
 org.quartz.threadPool.threadPriority = 5
+
 #==============================================================
 #Configure JobStore
 #==============================================================
@@ -188,6 +191,7 @@ org.quartz.jobStore.dataSource = myDS
 org.quartz.jobStore.isClustered = false
 #集群中服务器相互检测间隔，每台服务器都会按照下面配置的时间间隔往服务器中更新自己的状态，如果某台服务器超过以下时间没有checkin，调度器就会认为该台服务器已经down掉，不会再分配任务给该台服务器
 org.quartz.jobStore.clusterCheckinInterval = 20000
+
 #==============================================================
 #Non-Managed Configure Datasource
 #==============================================================
