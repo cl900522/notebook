@@ -33,14 +33,40 @@ Java定时任务管理
     task = new TimerView();
     timer.schedule(task, 5000);
 ```
-
 ## Quartz
+### Quartz Only
 1. 引入jar包
 ```xml
     <dependency>
        <groupId>org.quartz-scheduler</groupId>
        <artifactId>quartz</artifactId>
-       <version>1.8.6</version>
+       <version>2.2.2</version>
+    </dependency>
+```
+2. 构建job，schedule，trigger
+```java
+    JobDetail job1 = JobBuilder.newJob(Job1.class).withIdentity("dummyJobName1", "group1").build();
+    SimpleScheduleBuilder simpleSchedule = SimpleScheduleBuilder.simpleSchedule().withIntervalInSeconds(5).repeatForever();
+    // CronScheduleBuilder cronSchedule = CronScheduleBuilder.cronSchedule("0/5 * * * * ?");
+    Trigger trigger = TriggerBuilder.newTrigger().withIdentity("dummyTriggerName1", "group1").withSchedule(simpleSchedule).build();
+    Scheduler scheduler = new StdSchedulerFactory().getScheduler();
+    scheduler.start();
+    scheduler.scheduleJob(job1, trigger);
+```
+
+### Quartz With Spring
+
+1. 引入jar包
+```xml
+    <dependency>
+        <groupId>org.springframework</groupId>
+        <artifactId>spring-context-support</artifactId>
+        <version>${org.springframework.version}</version>
+    </dependency>
+    <dependency>
+       <groupId>org.quartz-scheduler</groupId>
+       <artifactId>quartz</artifactId>
+       <version>2.2.2</version>
     </dependency>
 ```
 
@@ -73,7 +99,7 @@ Java定时任务管理
     通过spring bean注入
 
     ```xml
-        <bean name="job1" class="org.springframework.scheduling.quartz.JobDetailBean">
+        <bean name="job1" class="org.springframework.scheduling.quartz.JobDetailFactoryBean">
             <property name="jobClass" value="com.gy.Job1" />
             <property name="jobDataAsMap">
             <map>
@@ -100,14 +126,14 @@ Java定时任务管理
 
 3. 构建执行触发器
 ```xml
-<bean id="simpleTrigger" class="org.springframework.scheduling.quartz.SimpleTriggerBean">
+<bean id="simpleTrigger" class="org.springframework.scheduling.quartz.SimpleTriggerFactoryBean">
     <property name="jobDetail" ref="job1" />
     <property name="startDelay" value="0" /><!-- 调度工厂实例化后，经过0秒开始执行调度 -->
     <property name="repeatInterval" value="2000" /><!-- 每2秒调度一次 -->
 </bean>
 ```
 ```xml
-<bean id="cronTrigger" class="org.springframework.scheduling.quartz.CronTriggerBean">
+<bean id="cronTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
     <property name="jobDetail" ref="myPrintSchedule" />
     <!-- 每天12:00运行一次 -->
     <property name="cronExpression" value="0 0 12 * * ?" />
@@ -128,6 +154,53 @@ Java定时任务管理
         </list>
     </property>
 </bean>
+```
+### 分部署部署
+对于单机的任务调度，使用Quartz十分方便。但是在分布式情况下，对于集群中每台机器都会执行任务，从而造成了重复执行任务的问题。Quart不仅支持单机任务调度，同时也支持集群中的任务调度。原理如下：在集群中，各个不同的机器公用同一个调度器，调度器按照一定的算法选择集群中某一台机器执行任务。
+```properties
+#Configure Main Scheduler Properties
+#==============================================================
+#配置集群时，quartz调度器的id，由于配置集群时，只有一个调度器，必须保证每个服务器该值都相同，可以不用修改，只要每个ams都一样就行
+org.quartz.scheduler.instanceName = Scheduler1
+#集群中每台服务器自己的id，AUTO表示自动生成，无需修改
+org.quartz.scheduler.instanceId = AUTO
+#==============================================================
+#Configure ThreadPool
+#==============================================================
+#quartz线程池的实现类，无需修改
+org.quartz.threadPool.class = org.quartz.simpl.SimpleThreadPool
+#quartz线程池中线程数，可根据任务数量和负责度来调整
+org.quartz.threadPool.threadCount = 5
+#quartz线程优先级
+org.quartz.threadPool.threadPriority = 5
+#==============================================================
+#Configure JobStore
+#==============================================================
+#表示如果某个任务到达执行时间，而此时线程池中没有可用线程时，任务等待的最大时间，如果等待时间超过下面配置的值(毫秒)，本次就不在执行，而等待下一次执行时间的到来，可根据任务量和负责程度来调整
+org.quartz.jobStore.misfireThreshold = 60000
+#实现集群时，任务的存储实现方式，org.quartz.impl.jdbcjobstore.JobStoreTX表示数据库存储，无需修改
+org.quartz.jobStore.class = org.quartz.impl.jdbcjobstore.JobStoreTX
+#quartz存储任务相关数据的表的前缀，无需修改
+org.quartz.jobStore.tablePrefix = QRTZ_
+#连接数据库数据源名称，与下面配置中org.quartz.dataSource.myDS的myDS一致即可，可以无需修改
+org.quartz.jobStore.dataSource = myDS
+#是否启用集群，启用，改为true,注意：启用集群后，必须配置下面的数据源，否则quartz调度器会初始化失败
+org.quartz.jobStore.isClustered = false
+#集群中服务器相互检测间隔，每台服务器都会按照下面配置的时间间隔往服务器中更新自己的状态，如果某台服务器超过以下时间没有checkin，调度器就会认为该台服务器已经down掉，不会再分配任务给该台服务器
+org.quartz.jobStore.clusterCheckinInterval = 20000
+#==============================================================
+#Non-Managed Configure Datasource
+#==============================================================
+#配置连接数据库的实现类，可以参照IAM数据库配置文件中的配置
+org.quartz.dataSource.myDS.driver = com.mysql.jdbc.Driver
+#配置连接数据库连接，可以参照IAM数据库配置文件中的配置
+org.quartz.dataSource.myDS.URL = jdbc:mysql://localhost:3306/test
+#配置连接数据库用户名
+org.quartz.dataSource.myDS.user = yunxi
+#配置连接数据库密码
+org.quartz.dataSource.myDS.password = 123456
+#配置连接数据库连接池大小，一般为上面配置的线程池的2倍
+org.quartz.dataSource.myDS.maxConnections = 10
 ```
 
 ## Spring task
