@@ -11,6 +11,10 @@ docker run -d -p 3306:3306 --name mysql1 --restart always -e MYSQL_ROOT_PASSWORD
 docker run -d -p 27017:27017 --name mongo1 --restart always mongo
 docker run -d -p 27017:27017 --restart always -v /web/data/mongo1:/data/db --name mongo1 mongo
 
+
+docker run -d -p 27017:27017 --restart always -v /web/data/mongo1:/data/db --name mongo1 mongo --auth
+>开启权限认证，默认是关闭的
+
 # redis
 eocker run -d -p 6379:6379 --name redis1 --restart always -d -v /web/data/redis/data:/data redis
 
