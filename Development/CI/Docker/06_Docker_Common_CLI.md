@@ -24,7 +24,7 @@ docker run -d -p 8081:8081 --restart always --name nexus -v /web/data/sonatype-w
 
 # portainer
 docker run -ti -d -p 2375:2375 --restart=always --name shipyard-proxy -v /var/run/docker.sock:/var/run/docker.sock -e PORT=2375 shipyard/docker-proxy:latest
-docker run -d -p 9000:9000 -v /var/run/docker.sock:/var/run/docker.sock --name portainer -v /web/data/portainer:/data portainer/portainer
+docker run -d --restart=always -p 9000:9000 -v /var/run/docker.sock:/var/run/docker.sock --name portainer -v /web/data/portainer:/data portainer/portainer
 
 # active mq
 docker pull webcenter/activemq
@@ -44,3 +44,10 @@ docker run -d --name hdfs-namenode -h master --net hadoopNet --ip 172.19.0.10 -p
 docker run -d --name hdfs-datanode1 --net hadoopNet --ip 172.19.0.11 -e "CORE_CONF_fs_defaultFS=hdfs://192.168.100.200:8020" -e "HDFS_CONF_DFS_REPLICATION=2" -e "CLUSTER_NAME=cluster0" uhopper/hadoop-datanode:latest
 
 docker run -d --name hdfs-datanode2 --net hadoopNet --ip 172.19.0.12 -e "CORE_CONF_fs_defaultFS=hdfs://172.19.0.10:8020" -e "HDFS_CONF_DFS_REPLICATION=2" -e "CLUSTER_NAME=cluster0" uhopper/hadoop-datanode:latest
+
+# elastic search
+mkdir -f -v /web/data/elasticsearch
+
+docker run -d --name elasticsearch -p 9200:9200 -p 9300:9300 -v /web/data/elasticsearch:/usr/share/elasticsearch/data elasticsearch
+
+docker run -d --name elasticsearch -p 9200:9200 -p 9300:9300 elasticsearch -Etransport.host=0.0.0.0 -Ediscovery.zen.minimum_master_nodes=1
