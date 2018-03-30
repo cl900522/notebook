@@ -45,6 +45,10 @@ docker run -d --name hdfs-datanode1 --net hadoopNet --ip 172.19.0.11 -e "CORE_CO
 
 docker run -d --name hdfs-datanode2 --net hadoopNet --ip 172.19.0.12 -e "CORE_CONF_fs_defaultFS=hdfs://172.19.0.10:8020" -e "HDFS_CONF_DFS_REPLICATION=2" -e "CLUSTER_NAME=cluster0" uhopper/hadoop-datanode:latest
 
+# gitlab
+docker run -itd  --publish 10443:443 --publish 10080:80 --publish 1022:22 --name gitlab --restart always  --volume /home/data/gitlab/config:/etc/gitlab  --volume /home/data/gitlab/logs:/var/log/gitlab --volume /home/data/gitlab/data:/var/opt/gitlab     gitlab/gitlab-ce:latest
+
+
 # elastic search
 mkdir -f -v /web/data/elasticsearch
 
