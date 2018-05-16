@@ -45,9 +45,9 @@ docker run -d --name hdfs-datanode1 --net hadoopNet --ip 172.19.0.11 -e "CORE_CO
 
 docker run -d --name hdfs-datanode2 --net hadoopNet --ip 172.19.0.12 -e "CORE_CONF_fs_defaultFS=hdfs://172.19.0.10:8020" -e "HDFS_CONF_DFS_REPLICATION=2" -e "CLUSTER_NAME=cluster0" uhopper/hadoop-datanode:latest
 
+docker run -itd --name=hadoopserver -p 8030:8030 -p 8040:8040 -p 8042:8042 -p 8088:8088 -p 19888:19888 -p 49707:49707 -p 50010:50010 -p 50020:50020 -p 50070:50070 -p 50075:50075 -p 50090:50090 -p 8020:9000 sequenceiq/hadoop-docker:2.7.0
 # gitlab
-docker run -itd  --publish 10443:443 --publish 10080:80 --publish 1022:22 --name gitlab --restart always  --volume /home/data/gitlab/config:/etc/gitlab  --volume /home/data/gitlab/logs:/var/log/gitlab --volume /home/data/gitlab/data:/var/opt/gitlab     gitlab/gitlab-ce:latest
-
+docker run -itd --env 'GITLAB_PORT=10080' --env 'GITLAB_SSH_PORT=10022' -e 'GITLAB_HOST=192.168.2.208' --publish 10080:80 --publish 1022:22 --name gitlab --restart always  --volume /home/data/gitlab/config:/etc/gitlab  --volume /home/data/gitlab/logs:/var/log/gitlab --volume /home/data/gitlab/data:/var/opt/gitlab     gitlab/gitlab-ce:latest
 
 # elastic search
 mkdir -f -v /web/data/elasticsearch
@@ -55,3 +55,6 @@ mkdir -f -v /web/data/elasticsearch
 docker run -d --name elasticsearch -p 9200:9200 -p 9300:9300 -v /web/data/elasticsearch:/usr/share/elasticsearch/data elasticsearch
 
 docker run -d --name elasticsearch -p 9200:9200 -p 9300:9300 elasticsearch -Etransport.host=0.0.0.0 -Ediscovery.zen.minimum_master_nodes=1
+
+# jenkins
+docker run -u root -d --name jenkins -p 10000:8080  -v /web/soft/jenkins/home:/var/jenkins_home -v /home/:/web/ -v /var/run/docker.sock:/var/run/docker.sock jenkinsci/blueocean
