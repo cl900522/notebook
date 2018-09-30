@@ -11,6 +11,7 @@
 集群  |支持   |支持   |支持
 负载均衡  |支持   |支持   |支持
 动态扩展 |不支持   |不支持   |支持(ZK)
+消费模式  | |RabbitMQ既支持内存队列也支持持久化队列，消费端为推模型，消费状态和订阅关系由服务端负责维护，消息消费完后立即删除，不保留历史消息。   | Kafka只支持消息持久化，消费端为拉模型，消费状态和订阅关系由客户端端负责维护，消息消费完后不会立即删除，会保留历史消息。因此支持多订阅时，消息只会存储一份就可以了。但是可能产生重复消费的情况。
 
 # RabbitMq
 ## 使用场景
@@ -76,7 +77,8 @@ RabbitMQ和一般的消息传输模式(队列模式&主题模式区别)
 
 ## 生产者消费模型
 
-## 简单 - 单发单接收
+## 点对点
+### 简单 - 单发单接收
 
 ```python
 channel = connection.channel()
@@ -104,7 +106,7 @@ channel.queueDeclare(TASK_QUEUE_NAME, true, false, false, null);
 channel.basicQos(1);
 channel.basicAck(delivery.getEnvelope().getDeliveryTag(), false);
 ```
-
+## 发布订阅
 ### 发布-订阅
 发布、订阅模式，发送端发送广播消息，多个接收端接收。
 
@@ -202,9 +204,145 @@ prefetchCount：会告诉RabbitMQ不要同时给一个消费者推送多于N个�
 
 header exchange(头交换机)和主题交换机有点相似，但是不同于主题交换机的路由是基于路由键，头交换机的路由值基于消息的header数据。主题交换机路由键只有是字符串,而头交换机可以是整型和哈希值，header Exchange类型用的比较少。
 
----------------------
+消息header数据里有一个特殊值”x-match”，它有两个值：
+* all: 默认值。一个传送消息的header里的键值对和交换机的header键值对全部匹配，才可以路由到对应交换机
+* any: 一个传送消息的header里的键值对和交换机的header键值对任意一个匹配，就可以路由到对应交换机
 
-本文来自 hry2015 的CSDN 博客 ，全文地址请点击：https://blog.csdn.net/hry2015/article/details/79188615?utm_source=copy
+### 生产者
+主要业务逻辑如下：
+1. 配置连接工厂
+2. 建立TCP连接
+3. 在TCP连接的基础上创建通道
+4. 声明一个headers交换机
+5. 设置要发送消息的headers值（此值由外部传入）
+6. 发送消息
+
+```java
+public void send() {
+    // 声明一个headers交换机
+    channel.exchangeDeclare(EXCHANGE_NAME, BuiltinExchangeType.HEADERS);
+    String message = "headers-" + System.currentTimeMillis();
+
+    // 生成发送消息的属性
+    AMQP.BasicProperties props = new AMQP.BasicProperties
+           .Builder()
+           .headers(headers)
+           .build();
+
+    // 发送消息，并配置消息
+    channel.basicPublish(EXCHANGE_NAME, "", props, message.getBytes("UTF-8"));
+}
+```
+
+### 消费者
+主要业务逻辑如下：
+1. 配置连接工厂
+2. 建立TCP连接
+3. 在TCP连接的基础上创建通道
+4. 声明一个headers交换机
+5. 声明一个临时队列
+6. 将队列绑定到指定交换机上，并设置header的参数（此值由外部传入）
+7. 接收消息并处理
+
+```java
+public void initReceive() {
+    // 声明一个headers交换机
+    channel.exchangeDeclare(EXCHANGE_NAME, BuiltinExchangeType.HEADERS);
+
+    // 声明一个临时队列
+    String queueName = channel.queueDeclare().getQueue();
+    // 将队列绑定到指定交换机上
+    channel.queueBind(queueName, EXCHANGE_NAME, "", myHeaders);
+
+    System.out.println(" [HeaderRecv ["+ myHeaders +"]] Waiting for messages.");
+
+    Consumer consumer = new DefaultConsumer(channel) {
+        @Override
+        public void handleDelivery(String consumerTag, Envelope envelope,
+                                   AMQP.BasicProperties properties, byte[] body) throws IOException {
+            String message = new String(body, "UTF-8");
+            System.out.println(" [HeaderRecv ["+ myHeaders +"] ] Received '" + properties.getHeaders() + "':'" + message + "'");
+        }
+    };
+    // 接收消息
+    channel.basicConsume(queueName, true, consumer);
+
+}
+```
+
+
+### 测试
+
+```java
+@Test
+public void header() throws InterruptedException {
+
+    // 消费者1：绑定 format=pdf,type=report
+    executorService.submit(() -> {
+        Map<String,Object> headers = new HashMap();
+        headers.put("format","pdf");
+        headers.put("type","report");
+        headers.put("x-match","all");
+        HeaderRecv.execute(rabbitmq_host, rabbitmq_user, rabbitmq_pwd, headers);
+    });
+
+    // 消费者2：绑定  format=pdf,type=log
+    executorService.submit(() -> {
+        Map<String,Object> headers = new HashMap();
+        headers.put("format","pdf");
+        headers.put("type","log");
+        headers.put("x-match","any");
+        HeaderRecv.execute(rabbitmq_host, rabbitmq_user, rabbitmq_pwd, headers);
+    });
+
+    // 消费者3：绑定  format=zip,type=report
+    executorService.submit(() -> {
+        Map<String,Object> headers = new HashMap();
+        headers.put("format","zip");
+        headers.put("type","report");
+        headers.put("x-match","all");
+     //   headers.put("x-match","any");
+        HeaderRecv.execute(rabbitmq_host, rabbitmq_user, rabbitmq_pwd, headers);
+    });
+
+    Thread.sleep(2* 1000);
+    System.out.println("=============消息1===================");
+    // 生产者1 ： format=pdf,type=reprot,x-match=all
+    executorService.submit(() -> {
+        Map<String,Object> headers = new HashMap();
+        headers.put("format","pdf");
+        headers.put("type","report");
+   //     headers.put("x-match","all");
+        HeaderSend.execute(rabbitmq_host, rabbitmq_user, rabbitmq_pwd, headers);
+    });
+
+    Thread.sleep(5* 100);
+    System.out.println("=============消息2===================");
+    // 生产者2 ： format=pdf,x-match=any
+    executorService.submit(() -> {
+        Map<String,Object> headers = new HashMap();
+        headers.put("format","pdf");
+   //     headers.put("x-match","any");
+        HeaderSend.execute(rabbitmq_host, rabbitmq_user, rabbitmq_pwd, headers);
+    });
+
+    Thread.sleep(5* 100);
+    System.out.println("=============消息3===================");
+    // 生产者3 ： format=zip,type=log,x-match=all
+    executorService.submit(() -> {
+        Map<String,Object> headers = new HashMap();
+        headers.put("format","zip");
+        headers.put("type","log");
+  //      headers.put("x-match","all");
+        HeaderSend.execute(rabbitmq_host, rabbitmq_user, rabbitmq_pwd, headers);
+    });
+
+    // sleep 10s
+    Thread.sleep(10 * 1000);
+}
+
+```
+
 
 ## 资源
 RabbitMQ核心概念篇
@@ -216,8 +354,14 @@ http://www.cnblogs.com/luxiaoxun/p/3918054.html
 RabbitMq的整理 exchange、route、queue关系
 http://blog.csdn.net/samxx8/article/details/47417133
 
+消息队列-推/拉模式学习
+http://www.cnblogs.com/charlesblc/p/6045238.html
+
 官方Turtorial
 http://www.rabbitmq.com/tutorials/tutorial-two-java.html
+
+header exchange(头交换机)用法
+https://blog.csdn.net/hry2015/article/details/79188615
 
 # ActiveMq
 
