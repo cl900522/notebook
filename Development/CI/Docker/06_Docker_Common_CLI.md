@@ -16,7 +16,7 @@ docker run -d -p 27017:27017 --restart always -v /web/data/mongo1:/data/db --nam
 >开启权限认证，默认是关闭的
 
 # redis
-eocker run -d -p 6379:6379 --name redis1 --restart always -d -v /web/data/redis/data:/data redis
+docker run -d -p 6379:6379 --name redis1 --restart always -d -v /web/data/redis/data:/data redis
 
 # sonatype-work
 mkdir /web/data/sonatype-work && chown -R 200 /web/data/sonatype-work
@@ -31,8 +31,7 @@ docker pull webcenter/activemq
 docker run --name activemq -p 61616:61616 -e ACTIVEMQ_ADMIN_LOGIN=admin -e ACTIVEMQ_ADMIN_PASSWORD=admin123 --restart=always -d webcenter/activemq:latest
 
 # rabbit mq
-docker run -d --restart=always --hostname my-rabbit --name main-rabbit -p 5672:5672 rabbitmq:3.6.11-alpine
-docker run -d --restart=always --hostname my-rabbit --name portal-rabbit -p 15672:15672 rabbitmq:3.6.11-management-alpine
+docker run -d --restart=always -v /web/data/rabbitmq:/var/lib/rabbitmq -e RABBITMQ_DEFAULT_USER=guest -e RABBITMQ_DEFAULT_PASS=guest --hostname my-rabbit --name rabbitmq -p 15672:15672 -p 5672:5672 rabbitmq:3-management
 
 # hadoop hdfs
 docker network create --subnet=172.19.0.0/16 hadoopNet
@@ -46,6 +45,7 @@ docker run -d --name hdfs-datanode1 --net hadoopNet --ip 172.19.0.11 -e "CORE_CO
 docker run -d --name hdfs-datanode2 --net hadoopNet --ip 172.19.0.12 -e "CORE_CONF_fs_defaultFS=hdfs://172.19.0.10:8020" -e "HDFS_CONF_DFS_REPLICATION=2" -e "CLUSTER_NAME=cluster0" uhopper/hadoop-datanode:latest
 
 docker run -itd --name=hadoopserver -p 8030:8030 -p 8040:8040 -p 8042:8042 -p 8088:8088 -p 19888:19888 -p 49707:49707 -p 50010:50010 -p 50020:50020 -p 50070:50070 -p 50075:50075 -p 50090:50090 -p 8020:9000 sequenceiq/hadoop-docker:2.7.0
+
 # gitlab
 docker run -itd --env 'GITLAB_PORT=10080' --env 'GITLAB_SSH_PORT=10022' -e 'GITLAB_HOST=192.168.2.208' --publish 10080:80 --publish 1022:22 --name gitlab --restart always  --volume /home/data/gitlab/config:/etc/gitlab  --volume /home/data/gitlab/logs:/var/log/gitlab --volume /home/data/gitlab/data:/var/opt/gitlab     gitlab/gitlab-ce:latest
 
