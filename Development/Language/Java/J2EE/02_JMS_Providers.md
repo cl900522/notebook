@@ -363,8 +363,142 @@ http://www.rabbitmq.com/tutorials/tutorial-two-java.html
 header exchange(头交换机)用法
 https://blog.csdn.net/hry2015/article/details/79188615
 
-# ActiveMq
+
+https://www.cnblogs.com/wangiqngpei557/p/6158094.html
 
 # Kafka
+Kafka剖析（一）：Kafka背景及架构介绍
+http://www.infoq.com/cn/articles/kafka-analysis-part-1
 
+Kafka【第一篇】Kafka集群搭建
 http://www.cnblogs.com/luotianshuai/p/5206662.html
+
+为什么Kafka那么快
+https://blog.csdn.net/z69183787/article/details/80323581
+
+# ActiveMq
+## JMS编程模型
+1. 管理对象（Administered objects）-连接工厂（Connection -
+2. Factories）和目的地（Destination）
+3. 连接对象（Connections）
+4. 会话（Sessions）
+5. 消息生产者（Message Producers）
+6. 消息消费者（Message Consumers）
+7. 消息监听者（Message Listeners）
+
+![](/images/2017/09/mq-struct.png)
+
+### 连接工厂
+
+创建Connection对象的工厂，针对两种不同的jms消息模型，分别有QueueConnectionFactory和TopicConnectionFactory两种。可以通过JNDI来查找ConnectionFactory对象。客户端使用一个连接工厂对象连接到JMS服务提供者，它创建了JMS服务提供者和客户端之间的连接。JMS客户端（如发送者或接受者）会在JNDI名字空间中搜索并获取该连接。使用该连接，客户端能够与目的地通讯，往队列或话题发送/接收消息。
+
+```java
+QueueConnectionFactory queueConnFactory = (QueueConnectionFactory) initialCtx.lookup ("primaryQCF");
+Queue purchaseQueue = (Queue) initialCtx.lookup ("Purchase_Queue");
+Queue returnQueue = (Queue) initialCtx.lookup ("Return_Queue");
+```
+
+### 目的地
+
+目的地指明消息被发送的目的地以及客户端接收消息的来源。JMS使用两种目的地，队列和话题。如下代码指定了一个队列和话题：
+创建一个队列Session：
+```java
+QueueSession ses = con.createQueueSession (false, Session.AUTO_ACKNOWLEDGE);  //get the Queue object
+Queue t = (Queue) ctx.lookup ("myQueue");  //create QueueReceiver
+QueueReceiver receiver = ses.createReceiver(t);
+```
+
+创建一个Topic Session：
+```java
+QueueSession ses = con.createQueueSession (false, Session.AUTO_ACKNOWLEDGE);  //get the Queue object
+Queue t = (Queue) ctx.lookup ("myQueue");  //create QueueReceiver
+QueueReceiver receiver = ses.createReceiver(t);
+```
+
+### JMS连接
+Connection表示在客户端和JMS系统之间建立的链接（对TCP/IP socket的包装）。Connection可以产生一个或多个Session。跟ConnectionFactory一样，Connection也有两种类型：QueueConnection和TopicConnection。
+
+连接对象封装了与JMS提供者之间的虚拟连接，如果我们有一个ConnectionFactory对象，可以使用它来创建一个连接。
+```java
+Connection connection = connectionFactory.createConnection();
+```
+
+创建完连接后，需要在程序使用结束后关闭它：
+```java
+connection.close();
+```
+
+### JMS 会话
+
+Session 是我们对消息进行操作的接口，可以通过session创建生产者、消费者、消息等。Session 提供了事务的功能，如果需要使用session发送/接收多个消息时，可以将这些发送/接收动作放到一个事务中。
+
+我们可以在连接创建完成之后创建session：
+```java
+Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+```
+
+这里面提供了参数两个参数，第一个参数是是否支持事务，第二个是事务的类型
+
+### JMS消息生产者
+
+消息生产者由Session创建，用于往目的地发送消息。生产者实现MessageProducer接口，我们可以为目的地、队列或话题创建生产者；
+```java
+MessageProducer producer = session.createProducer(dest);
+MessageProducer producer = session.createProducer(queue);
+MessageProducer producer = session.createProducer(topic);
+```
+
+创建完消息生产者后，可以使用send方法发送消息：
+```java
+producer.send(message);
+```
+
+### JMS消息消费者
+
+消息消费者由Session创建，用于接收被发送到Destination的消息。
+
+```java
+MessageConsumer consumer = session.createConsumer(dest);
+MessageConsumer consumer = session.createConsumer(queue);
+MessageConsumer consumer = session.createConsumer(topic);
+```
+
+### JMS消息监听器
+
+消息监听器。如果注册了消息监听器，一旦消息到达，将自动调用监听器的onMessage方法。EJB中的MDB（Message-Driven Bean）就是一种MessageListener。
+JMS消息监听器是消息的默认事件处理者，他实现了MessageListener接口，该接口包含一个onMessage方法，在该方法中需要定义消息达到后的具体动作。通过调用setMessageListener方法我们给指定消费者定义了消息监听器。
+```java
+Listener myListener =newListener();
+consumer.setMessageListener(myListener);
+```
+
+## JMS消息结构
+
+JMS客户端使用JMS消息与系统通讯，JMS消息虽然格式简单但是非常灵活， JMS消息由三部分组成：
+
+### 消息头
+
+JMS消息头预定义了若干字段用于客户端与JMS提供者之间识别和发送消息，预编译头如下：
+* JMSDestination
+* JMSDeliveryMode
+* JMSMessageID
+* JMSTimestamp
+* JMSCorrelationID
+* JMSReplyTo
+* JMSRedelivered
+* JMSType
+* JMSExpiration
+* JMSPriority
+
+### 消息属性
+
+我们可以给消息设置自定义属性，这些属性主要是提供给应用程序的。对于实现消息过滤功能，消息属性非常有用，JMS API定义了一些标准属性，JMS服务提供者可以选择性的提供部分标准属性。
+
+### 消息体
+
+在消息体中，JMS API定义了五种类型的消息格式，让我们可以以不同的形式发送和接受消息，并提供了对已有消息格式的兼容。不同的消息类型如下：
+* Text message: javax.jms.TextMessage，表示一个文本对象。
+* Object message: javax.jms.ObjectMessage，表示一个JAVA对象。
+* Bytes message: javax.jms.BytesMessage，表示字节数据。
+* Stream message:javax.jms.StreamMessage，表示java原始值数据流。
+* Map message: javax.jms.MapMessage，表示键值对。
