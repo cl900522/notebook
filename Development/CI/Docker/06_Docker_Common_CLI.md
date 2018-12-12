@@ -7,6 +7,9 @@ docker run -d -p 2181:2181 --name zookeeper1 --restart always zookeeper
 # mysql
 docker run -d -p 3306:3306 --name mysql1 --restart always -e MYSQL_ROOT_PASSWORD=root -v /web/data/mysql1-data:/var/lib/mysql mysql --character-set-server=utf8 --collation-server=utf8_bin --default-authentication-plugin=mysql_native_password
 
+
+>从MySQL8.0 开始，默认的加密规则使用的是 caching_sha2_password,需要修改为默认的mysql_native_password，否则会导致登陆连接
+
 # mongo
 docker run -d -p 27017:27017 --name mongo1 --restart always mongo
 docker run -d -p 27017:27017 --restart always -v /web/data/mongo1:/data/db --name mongo1 mongo

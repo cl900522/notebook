@@ -80,6 +80,7 @@ push模式很难适应消费速率不同的消费者，因为消息发送速率�
 
 ## 对比
 无论是消息系统，还是配置管理中心，甚至存储系统，你都要面临这样一个选择，push模型 or pull模型?是服务端主动给客户端推送数据，还是客户端去服务器拉数据，一张图表对比如下：
+
    |push模型   |pull模型   |
 --|---|---|--
 描述  |服务端主动发送数据给客户端   |客户端主动从服务端拉取数据，通常客户端会定时拉取   |
@@ -89,8 +90,7 @@ push模式很难适应消费速率不同的消费者，因为消息发送速率�
 状态保存  |集中式，集中在服务端   |分布式，分散在各个客户端   |
 负载均衡  |服务端统一处理和控制   | 客户端之间做分配，需要协调机制，如使用zookeeper  |
 其他  |服务端需要做流量控制，无法最大化客户端的处理能力。 其次，在客户端故障情况下，无效的push对服务端有一定负载。 |客户端的请求可能很多无效或者没有数据可供传输，浪费带宽和服务器处理能力   |
-缺点方案  |服务器端的状态存储是个难点，可以将这些状态转移到DB或者key-value存储，来减轻server压力。   |针对实时性的问题，可以将push加入进来，push小数据的通知信息，让客户端再来主动pull。
-    针对无效请求的问题，可以设置逐渐延长间隔时间的策略，以及合理设计协议尽量缩小请求数据包来节省带宽。   |
+缺点方案  |服务器端的状态存储是个难点，可以将这些状态转移到DB或者key-value存储，来减轻server压力。   |针对实时性的问题，可以将push加入进来，push小数据的通知信息，让客户端再来主动pull。    针对无效请求的问题，可以设置逐渐延长间隔时间的策略，以及合理设计协议尽量缩小请求数据包来节省带宽。   |
 流转机制    |服务端需要依据订阅者消费能力做流控 |消费端可以根据自身消费能力决定是否pull
 
 ## 两种模式结合
@@ -99,129 +99,3 @@ push模式很难适应消费速率不同的消费者，因为消息发送速率�
 * 先拉后推——根据用户拉取的信息，信源进一步主动提供(推送)与之相关的信息；
 * 推中有拉——在信息推送过程中，允许用户随时中断并定格在感兴趣的网页上，以拉取更有针对性的信息；
 * 拉中有推——根据用户搜索(即拉取)过程中所用的关键字，信源主动推送相关的最新信息。
-
-# JMS编程模型
-1. 管理对象（Administered objects）-连接工厂（Connection -
-2. Factories）和目的地（Destination）
-3. 连接对象（Connections）
-4. 会话（Sessions）
-5. 消息生产者（Message Producers）
-6. 消息消费者（Message Consumers）
-7. 消息监听者（Message Listeners）
-
-![](/images/2017/09/mq-struct.png)
-
-## 连接工厂
-
-创建Connection对象的工厂，针对两种不同的jms消息模型，分别有QueueConnectionFactory和TopicConnectionFactory两种。可以通过JNDI来查找ConnectionFactory对象。客户端使用一个连接工厂对象连接到JMS服务提供者，它创建了JMS服务提供者和客户端之间的连接。JMS客户端（如发送者或接受者）会在JNDI名字空间中搜索并获取该连接。使用该连接，客户端能够与目的地通讯，往队列或话题发送/接收消息。
-
-```java
-QueueConnectionFactory queueConnFactory = (QueueConnectionFactory) initialCtx.lookup ("primaryQCF");
-Queue purchaseQueue = (Queue) initialCtx.lookup ("Purchase_Queue");
-Queue returnQueue = (Queue) initialCtx.lookup ("Return_Queue");
-```
-
-## 目的地
-
-目的地指明消息被发送的目的地以及客户端接收消息的来源。JMS使用两种目的地，队列和话题。如下代码指定了一个队列和话题：
-创建一个队列Session：
-```java
-QueueSession ses = con.createQueueSession (false, Session.AUTO_ACKNOWLEDGE);  //get the Queue object
-Queue t = (Queue) ctx.lookup ("myQueue");  //create QueueReceiver
-QueueReceiver receiver = ses.createReceiver(t);
-```
-
-创建一个Topic Session：
-```java
-QueueSession ses = con.createQueueSession (false, Session.AUTO_ACKNOWLEDGE);  //get the Queue object
-Queue t = (Queue) ctx.lookup ("myQueue");  //create QueueReceiver
-QueueReceiver receiver = ses.createReceiver(t);
-```
-
-## JMS连接
-Connection表示在客户端和JMS系统之间建立的链接（对TCP/IP socket的包装）。Connection可以产生一个或多个Session。跟ConnectionFactory一样，Connection也有两种类型：QueueConnection和TopicConnection。
-
-连接对象封装了与JMS提供者之间的虚拟连接，如果我们有一个ConnectionFactory对象，可以使用它来创建一个连接。
-```java
-Connection connection = connectionFactory.createConnection();
-```
-
-创建完连接后，需要在程序使用结束后关闭它：
-```java
-connection.close();
-```
-
-## JMS 会话
-
-Session 是我们对消息进行操作的接口，可以通过session创建生产者、消费者、消息等。Session 提供了事务的功能，如果需要使用session发送/接收多个消息时，可以将这些发送/接收动作放到一个事务中。
-
-我们可以在连接创建完成之后创建session：
-```java
-Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
-```
-
-这里面提供了参数两个参数，第一个参数是是否支持事务，第二个是事务的类型
-
-## JMS消息生产者
-
-消息生产者由Session创建，用于往目的地发送消息。生产者实现MessageProducer接口，我们可以为目的地、队列或话题创建生产者；
-```java
-MessageProducer producer = session.createProducer(dest);
-MessageProducer producer = session.createProducer(queue);
-MessageProducer producer = session.createProducer(topic);
-```
-
-创建完消息生产者后，可以使用send方法发送消息：
-```java
-producer.send(message);
-```
-
-## JMS消息消费者
-
-消息消费者由Session创建，用于接收被发送到Destination的消息。
-
-```java
-MessageConsumer consumer = session.createConsumer(dest);
-MessageConsumer consumer = session.createConsumer(queue);
-MessageConsumer consumer = session.createConsumer(topic);
-```
-
-## JMS消息监听器
-
-消息监听器。如果注册了消息监听器，一旦消息到达，将自动调用监听器的onMessage方法。EJB中的MDB（Message-Driven Bean）就是一种MessageListener。
-JMS消息监听器是消息的默认事件处理者，他实现了MessageListener接口，该接口包含一个onMessage方法，在该方法中需要定义消息达到后的具体动作。通过调用setMessageListener方法我们给指定消费者定义了消息监听器。
-```java
-Listener myListener =newListener();
-consumer.setMessageListener(myListener);
-```
-
-# JMS消息结构
-
-JMS客户端使用JMS消息与系统通讯，JMS消息虽然格式简单但是非常灵活， JMS消息由三部分组成：
-
-## 消息头
-
-JMS消息头预定义了若干字段用于客户端与JMS提供者之间识别和发送消息，预编译头如下：
-* JMSDestination
-* JMSDeliveryMode
-* JMSMessageID
-* JMSTimestamp
-* JMSCorrelationID
-* JMSReplyTo
-* JMSRedelivered
-* JMSType
-* JMSExpiration
-* JMSPriority
-
-## 消息属性
-
-我们可以给消息设置自定义属性，这些属性主要是提供给应用程序的。对于实现消息过滤功能，消息属性非常有用，JMS API定义了一些标准属性，JMS服务提供者可以选择性的提供部分标准属性。
-
-## 消息体
-
-在消息体中，JMS API定义了五种类型的消息格式，让我们可以以不同的形式发送和接受消息，并提供了对已有消息格式的兼容。不同的消息类型如下：
-* Text message: javax.jms.TextMessage，表示一个文本对象。
-* Object message: javax.jms.ObjectMessage，表示一个JAVA对象。
-* Bytes message: javax.jms.BytesMessage，表示字节数据。
-* Stream message:javax.jms.StreamMessage，表示java原始值数据流。
-* Map message: javax.jms.MapMessage，表示键值对。
