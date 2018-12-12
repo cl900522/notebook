@@ -5,7 +5,7 @@ docker run -d -p 5000:5000 --restart always -v /web/data/registry:/tmp/registry 
 docker run -d -p 2181:2181 --name zookeeper1 --restart always zookeeper
 
 # mysql
-docker run -d -p 3306:3306 --name mysql1 --restart always -e MYSQL_ROOT_PASSWORD=root -v /web/data/mysql1-data:/var/lib/mysql mysql --character-set-server=utf8 --collation-server=utf8_bin
+docker run -d -p 3306:3306 --name mysql1 --restart always -e MYSQL_ROOT_PASSWORD=root -v /web/data/mysql1-data:/var/lib/mysql mysql --character-set-server=utf8 --collation-server=utf8_bin --default-authentication-plugin=mysql_native_password
 
 # mongo
 docker run -d -p 27017:27017 --name mongo1 --restart always mongo
