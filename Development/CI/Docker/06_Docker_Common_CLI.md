@@ -1,3 +1,7 @@
+# 镜像pull
+docker pull registry.docker-cn.com/library/zookeeper
+docker pull registry.docker-cn.com/canal/canal-server
+
 # registry
 docker run -d -p 5000:5000 --restart always -v /web/data/registry:/tmp/registry --name registry registry
 
@@ -5,7 +9,9 @@ docker run -d -p 5000:5000 --restart always -v /web/data/registry:/tmp/registry 
 docker run -d -p 2181:2181 --name zookeeper1 --restart always zookeeper
 
 # mysql
-docker run -d -p 3306:3306 --name mysql1 --restart always -e MYSQL_ROOT_PASSWORD=root -v /web/data/mysql1-data:/var/lib/mysql mysql --character-set-server=utf8 --collation-server=utf8_bin --default-authentication-plugin=mysql_native_password
+docker run -d -p 3306:3306 --name mysql1 --restart always -e MYSQL_ROOT_PASSWORD=root -v /web/data/mysql1-data:/var/lib/mysql mysql --character-set-server=utf8 --collation-server=utf8_bin  --default-authentication-plugin=mysql_native_password
+
+docker run -d -p 3306:3306 --name mysql1 --restart always -e MYSQL_ROOT_PASSWORD=root -v /web/data/mysql1-data:/var/lib/mysql mysql --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci  --default-authentication-plugin=mysql_native_password
 
 
 >从MySQL8.0 开始，默认的加密规则使用的是 caching_sha2_password,需要修改为默认的mysql_native_password，否则会导致登陆连接
@@ -61,3 +67,6 @@ docker run -d --name elasticsearch -p 9200:9200 -p 9300:9300 elasticsearch -Etra
 
 # jenkins
 docker run -u root -d --name jenkins -p 10000:8080  -v /web/soft/jenkins/home:/var/jenkins_home -v /home/:/web/ -v /var/run/docker.sock:/var/run/docker.sock jenkinsci/blueocean
+
+# canal
+docker run --name canal-server -e canal.instance.master.address=192.168.100.200:3306 -e canal.instance.dbUsername=canal -e canal.instance.dbPassword=canal -e canal.instance.connectionCharset=UTF-8 -p 11111:11111 -d canal/canal-server
