@@ -61,9 +61,24 @@ docker run -itd --env 'GITLAB_PORT=10080' --env 'GITLAB_SSH_PORT=10022' -e 'GITL
 # elastic search
 mkdir -f -v /web/data/elasticsearch
 
-docker run -d --name elasticsearch -p 9200:9200 -p 9300:9300 -v /web/data/elasticsearch:/usr/share/elasticsearch/data elasticsearch
+elsasticsearch.yml
 
-docker run -d --name elasticsearch -p 9200:9200 -p 9300:9300 elasticsearch -Etransport.host=0.0.0.0 -Ediscovery.zen.minimum_master_nodes=1
+```yml
+http.host: 0.0.0.0
+
+# head插件跨域
+http.cors.enabled: true
+http.cors.allow-origin: "*"
+
+# Uncomment the following lines for a production cluster deployment
+#transport.host: 0.0.0.0
+#discovery.zen.minimum_master_nodes: 1
+
+```
+
+docker run -d --restart always --name elasticsearch -p 9200:9200 -p 9300:9300 -e "discovery.type=single-node"  -v /web/data/elasticsearch-head/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml -v /web/data/elasticsearch:/usr/share/elasticsearch/data elasticsearch
+
+docker run -d --restart always --name elasticsearch-head -p 9100:9100 mobz/elasticsearch-head:5
 
 # jenkins
 docker run -u root -d --name jenkins -p 10000:8080  -v /web/soft/jenkins/home:/var/jenkins_home -v /home/:/web/ -v /var/run/docker.sock:/var/run/docker.sock jenkinsci/blueocean
