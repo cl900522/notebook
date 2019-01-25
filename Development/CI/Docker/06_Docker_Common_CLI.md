@@ -85,3 +85,6 @@ docker run -u root -d --name jenkins -p 10000:8080  -v /web/soft/jenkins/home:/v
 
 # canal
 docker run --name canal-server -e canal.instance.master.address=192.168.100.200:3306 -e canal.instance.dbUsername=canal -e canal.instance.dbPassword=canal -e canal.instance.connectionCharset=UTF-8 -p 11111:11111 -d canal/canal-server
+
+# neo4j
+docker run --name neo4j -d -p 7474:7474 -p 7687:7687  -v /web/data/neo4j:/data  neo4j
