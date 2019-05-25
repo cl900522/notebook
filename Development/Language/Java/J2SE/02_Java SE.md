@@ -352,8 +352,59 @@ JVM使用-XX:PermSize设置非堆内存初始值，默认是物理内存的1/64�
 :--:|:---|:--
 -Xms512m |	表示JVM初始分配的堆内存大小为512m（JVM Heap(堆内存)最小尺寸，初始分配）|
 -Xmx1024m |	JVM最大允许分配的堆内存大小为1024m，按需分配（JVM Heap(堆内存)最大允许的尺寸，按需分配）|
+-Xmn5M|表示堆内存中新生代内存大小为5M，如果超过则会向老年代申请空间。|
 -XX:PermSize=512M |	JVM初始分配的非堆内存|
 -XX:MaxPermSize=1024M |	JVM最大允许分配的非堆内存，按需分配|
 -XX:NewSize/-XX:MaxNewSize |	定义YOUNG段的尺寸，NewSize为JVM启动时YOUNG的内存大小；MaxNewSize为最大可占用的YOUNG内存大小。|
--XX:SurvivorRatio |	设置YOUNG代中Survivor空间和Eden空间的比例 |
+-XX:NewRatio=4 |	新生代与老年代的比值为1：4 |
+-XX:SurvivorRatio=8 |	设置YOUNG代中Survivor空间和Eden空间的比例1：1：8 |
 -Xss128K |	设置栈大小 |
+
+
+# 反射
+
+## java.lang.Class
+
+方法 | 用途 | 备注
+:---|:--|:--
+**字段和方法**|
+getFields| 获取public的字段 | 包括从父类中继承的
+getDeclaredFields| 获取所有的public, protected, default (package) access, and private字段| 不包括父类继承的
+getMethods|获取public的方法 | 包括从父类中继承的
+getDeclaredMethods|获取所有的public, protected, default (package) access, and private方法|不包括从父类接口中继承的
+**类的种类判断**|
+isArray|判断是否数组类|
+isInterface|判断是否接口类型|
+isPrimitive| 是否为基础数据类型|
+isAnnotation|是否注解|ANNOTATION标记
+isSynthetic|是否人造类|SYNTHETIC标记
+isEnum|是否枚举类|ENUM标记
+isAnonymousClass|是否匿名类
+isLocalClass|是否局部类
+isMemberClass|是否类变量
+getModifiers|获取修饰符| public, protected, private, final, static, abstract and interface
+**继承信息**|
+getInterfaces|获取实现的接口|
+getSuperclass|获取继承的父类|
+getGenericInterfaces|获取实现的全部接口
+getGenericSuperclass|获取父类
+getAnnotatedInterfaces|获取实现的接口类型信息|
+getAnnotatedSuperclass|获取继承的父类类型信息|
+**注解信息**|
+getAnnotations|获取声明的的注解|包含继承的注解，注解类需要加上@Inherited注解
+getDeclaredAnnotations|获取声明的的注解|不包含继承的注解
+getDeclaredAnnotation|获取声明的的注解的对象信息|
+**注解信息**|
+getConstructor|获取“参数是parameterTypes”的public的构造函数|
+getConstructors|获取全部的public的构造函数
+getDeclaredConstructor|获取“参数是parameterTypes”的，并且是类自身声明的构造函数，包含public、protected和private方法。
+getDeclaredConstructors|获取类自身声明的全部的构造函数，包含public、protected和private方法。
+**其他**|
+getEnclosingConstructor|如果这个类是“其它类的构造函数中的内部类”，调用getEnclosingConstructor()就是这个类所在的构造函数；若不存在，返回null。
+getEnumConstants|获取枚举类的所有变量值|
+getEnclosingClass|获取匿名类或者内部类的立即封闭类|
+getEnclosingMethod|获取匿名类的立即封闭方法|
+getComponentType|数组类class获取元素的类型信息，普通类则返回空|
+getClassLoader|获取classLoader|
+
+
