@@ -54,9 +54,15 @@ import java.lang.ref.ReferenceQueue;
 
 public class Main {
     public static void main(String[] args) {
+		String hello = new String("Hello");
         ReferenceQueue<String> queue = new ReferenceQueue<String>();
-        PhantomReference<String> pr = new PhantomReference<String>(new String("hello"), queue);
+        PhantomReference<String> pr = new PhantomReference<String>(hello, queue);
         System.out.println(pr.get());
+		System.out.println(pr.get());
+		System.gc();
+
+
+
     }
 }
 ```
