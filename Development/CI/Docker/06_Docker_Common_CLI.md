@@ -65,6 +65,8 @@ elsasticsearch.yml
 
 ```yml
 http.host: 0.0.0.0
+network.host: 0.0.0.0
+cluster.name: elasticsearch
 
 # head插件跨域
 http.cors.enabled: true
@@ -80,8 +82,41 @@ docker run -d --restart always --name elasticsearch -p 9200:9200 -p 9300:9300 -e
 
 docker run -d --restart always --name elasticsearch-head -p 9100:9100 mobz/elasticsearch-head:5
 
+
+## 修复elasticsearch 9300端口问题
+
+1. 在宿主机执行：sudo sysctl -w vm.max_map_count=262144
+
+2. 修改docker中jre的java.policy
+
+通过docker命令   docker exec -it myelasticsearch(这个是我的elasticsearch容器的名字) /bin/bash进去后找到java.policy文件并修改                 
+
+经过研究这是java的权限设置问题，ES5.x之前的版本可以在elasticsearch.yml里设置security.manager.enabled为false。在ES5.x删除了该设置参数，暂时我们可以修改jdk中配置。以jdk8为例，在${JAVA_HOME}/jre/lib/security，修改java.policy，在grant{ }中添加下列内容：
+
+```conf
+permission java.security.AllPermission；
+```
+
+## 修复elasticsearch-head请求错误
+
+1. 拷贝出app.js
+docker cp elasticsearch-head:/usr/src/app/_site/app.js ./
+
+2. 修改app.js
+在1305行插入
+contentType: 'application/json',
+
+3. 将app.js拷贝回去覆盖
+docker cp  ./app.js elasticsearch-head:/usr/src/app/_site/app.js
+
+4. 刷新页面即可
+
+
 # jenkins
 docker run -u root -d --name jenkins -p 10000:8080  -v /web/soft/jenkins/home:/var/jenkins_home -v /home/:/web/ -v /var/run/docker.sock:/var/run/docker.sock jenkinsci/blueocean
 
 # canal
 docker run --name canal-server -e canal.instance.master.address=192.168.100.200:3306 -e canal.instance.dbUsername=canal -e canal.instance.dbPassword=canal -e canal.instance.connectionCharset=UTF-8 -p 11111:11111 -d canal/canal-server
+
+# neo4j
+docker run --name neo4j -d -p 7474:7474 -p 7687:7687  -v /web/data/neo4j:/data  neo4j
