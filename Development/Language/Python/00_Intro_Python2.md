@@ -763,6 +763,13 @@ package_runoob
 ```
 
 ```python
+
+__all__ = ["add"]
+__version__ = "1.0"
+
+```
+
+```python
 #!/usr/bin/python
 # -*- coding: UTF-8 -*-
 
@@ -773,6 +780,9 @@ from package_runoob.runoob2 import runoob2
 runoob1()
 runoob2()
 ```
+
+__init__.py文件是用来标注引入包的相关说明，__all__变量用于标注则可以控制*所表示要引入的东西（模块，函数，类等）；__version__用于标注包版本
+__main__.py文件是在使用python -m pckage 运行的时候，执行__main__中的代码
 
 # 面向对象
 面向对象技术简介
