@@ -43,12 +43,45 @@
 幻读是事务非独立执行时发生的一种现象。例如事务T1对一个表中所有的行的某个数据项做了从“1”修改为“2”的操作，这时事务T2又对这个表中插入了一行数据项，而这个数据项的数值还是为“1”并且提交给数据库。而操作事务T1的用户如果再查看刚刚修改的数据，会发现还有一行没有修改，其实这行是从事务T2中添加的，就好像产生幻觉一样，这就是发生了幻读。
 幻读和不可重复读都是读取了另一条已经提交的事务（这点就脏读不同），所不同的是不可重复读查询的都是同一个数据项，而幻读针对的是一批数据整体（比如数据的个数）。
 
+## 隔离级别
 现在来看看MySQL数据库为我们提供的四种隔离级别：
 1. Serializable (串行化)：可避免脏读、不可重复读、幻读的发生。
 2. Repeatable read (可重复读)：可避免脏读、不可重复读的发生。
 3. Read committed (读已提交)：可避免脏读的发生。
 4. Read uncommitted (读未提交)：最低级别，任何情况都无法保证。
 
-以上四种隔离级别最高的是Serializable级别，最低的是Read uncommitted级别，当然级别越高，执行效率就越低。像Serializable这样的级别，就是以锁表的方式(类似于Java多线程中的锁)使得其他的线程只能在锁外等待，所以平时选用何种隔离级别应该根据实际情况。在MySQL数据库中默认的隔离级别为Repeatable read (可重复读)。
+以上四种隔离级别最高的是Serializable级别，最低的是Read uncommitted级别，当然级别越高，执行效率就越低。像Serializable这样的级别，就是以锁表的方式(类似于Java多线程中的锁)使得其他的线程只能在锁外等待，所以平时选用何种隔离级别应该根据实际情况。在MySQL数据库中默认的隔离级别为**Repeatable read** (可重复读)。
+
+隔离级别  |脏读 |不可重复读 |幻读
+:--:|:---|:---|:--
+|读未提交|可能|可能|可能
+|读已提交|不可能|可能|可能
+|可重复读|不可能|不可能|可能
+|串行化|不可能|不可能|不可能
+
 
 在MySQL数据库中，支持上面四种隔离级别，默认的为Repeatable read (可重复读)；而在Oracle数据库中，只支持Serializable (串行化)级别和Read committed (读已提交)这两种级别，其中默认的为Read committed级别。
+
+## MySQL
+
+mysql默认的事务处理级别是'REPEATABLE-READ',也就是可重复读
+
+1.查看当前会话隔离级别
+```
+select @@tx_isolation;
+```
+
+2.查看系统当前隔离级别
+```
+select @@global.tx_isolation;
+```
+
+3.设置当前会话隔离级别
+```
+set session transaction isolatin level repeatable read;
+```
+
+4.设置系统当前隔离级别
+```
+set global transaction isolation level repeatable read;
+```
