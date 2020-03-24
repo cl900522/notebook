@@ -85,3 +85,16 @@ set session transaction isolatin level repeatable read;
 ```
 set global transaction isolation level repeatable read;
 ```
+
+
+# 事务传播行为
+事务传播行为（propagation behavior）指的就是当一个事务方法被另一个事务方法调用时，这个事务方法应该如何进行。
+
+Spring定义了七种传播行为：
+![Transaction Propgation](/images/2020/03/transaction-propagation.png "Tip")
+
+
+https://blog.csdn.net/weixin_39625809/article/details/80707695
+
+
+

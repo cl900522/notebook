@@ -2,6 +2,7 @@ SE生僻点梳理
 =====
 
 # 对象引用
+
 ## 强引用（StrongReference）
 强引用就是指在程序代码之中普遍存在的，如果一个对象具有强引用，那垃圾回收器绝不会回收它。当内存空间不足，Java虚拟机宁愿抛出OutOfMemoryError错误，使程序异常终止，也不会靠随意回收具有强引用的对象来解决内存不足的问题。比如下面这段代码中的object和str都是强引用：
 ```java
@@ -72,7 +73,7 @@ public class Main {
 ManagementFactory
 ```java
 package com.fei;
- 
+
 import java.lang.management.ClassLoadingMXBean;
 import java.lang.management.CompilationMXBean;
 import java.lang.management.GarbageCollectorMXBean;
@@ -89,14 +90,14 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.List;
- 
+
 public class JvmInfo {
- 
+
 	static final long MB = 1024 * 1024;
-	
+
 	public static void main(String[] args) {
-		
-				
+
+
 		//打印系统信息
 		System.out.println("===========打印系统信息==========");
 		printOperatingSystemInfo();
@@ -124,10 +125,10 @@ public class JvmInfo {
 		//打印线程信息
 		System.out.println("===========打印线程==========");
 		printThreadInfo();
-		
+
 	}
-	
-	
+
+
 	private static void printOperatingSystemInfo(){
 		OperatingSystemMXBean system = ManagementFactory.getOperatingSystemMXBean();
 		//相当于System.getProperty("os.name").
@@ -138,26 +139,26 @@ public class JvmInfo {
 		System.out.println("操作系统的架构:"+system.getArch());
 		//相当于 Runtime.availableProcessors()
 		System.out.println("可用的内核数:"+system.getAvailableProcessors());
-		
+
 		if(isSunOsMBean(system)){
 			long totalPhysicalMemory = getLongFromOperatingSystem(system,"getTotalPhysicalMemorySize");
 			long freePhysicalMemory = getLongFromOperatingSystem(system, "getFreePhysicalMemorySize");
 			long usedPhysicalMemorySize =totalPhysicalMemory - freePhysicalMemory;
-			
+
 			System.out.println("总物理内存(M):"+totalPhysicalMemory/MB);
 			System.out.println("已用物理内存(M):"+usedPhysicalMemorySize/MB);
 			System.out.println("剩余物理内存(M):"+freePhysicalMemory/MB);
-			
+
 			long  totalSwapSpaceSize = getLongFromOperatingSystem(system, "getTotalSwapSpaceSize");
 			long freeSwapSpaceSize = getLongFromOperatingSystem(system, "getFreeSwapSpaceSize");
 			long usedSwapSpaceSize = totalSwapSpaceSize - freeSwapSpaceSize;
-			
+
 			System.out.println("总交换空间(M):"+totalSwapSpaceSize/MB);
 			System.out.println("已用交换空间(M):"+usedSwapSpaceSize/MB);
 			System.out.println("剩余交换空间(M):"+freeSwapSpaceSize/MB);
 		}
 	}
-	
+
 	private static long getLongFromOperatingSystem(OperatingSystemMXBean operatingSystem, String methodName) {
 		try {
 			final Method method = operatingSystem.getClass().getMethod(methodName,
@@ -177,7 +178,7 @@ public class JvmInfo {
 			throw new IllegalStateException(e);
 		}
 	}
- 
+
 	private static void printCompilationInfo(){
 		CompilationMXBean compilation = ManagementFactory.getCompilationMXBean();
 		System.out.println("JIT编译器名称："+compilation.getName());
@@ -186,15 +187,15 @@ public class JvmInfo {
 			System.out.println("总编译时间："+compilation.getTotalCompilationTime()+"秒");
 		}
 	}
-	
+
 	private static void printClassLoadingInfo(){
 		ClassLoadingMXBean classLoad= ManagementFactory.getClassLoadingMXBean();
 		System.out.println("已加载类总数："+classLoad.getTotalLoadedClassCount());
 		System.out.println("已加载当前类："+classLoad.getLoadedClassCount());
 		System.out.println("已卸载类总数："+classLoad.getUnloadedClassCount());
-		
+
 	}
-	
+
 	private static void printRuntimeInfo(){
 		RuntimeMXBean runtime = ManagementFactory.getRuntimeMXBean();
 		System.out.println("进程PID="+runtime.getName().split("@")[0]);
@@ -223,7 +224,7 @@ public class JvmInfo {
 		System.out.println("引导类路径:"+runtime.getBootClassPath());
 		System.out.println("库路径:"+runtime.getLibraryPath());
 	}
-	
+
 	private static void printMemoryManagerInfo(){
 		List<MemoryManagerMXBean> managers = ManagementFactory.getMemoryManagerMXBeans();
 		if(managers != null && !managers.isEmpty()){
@@ -233,7 +234,7 @@ public class JvmInfo {
 			}
 		}
 	}
-	
+
 	private static void printGarbageCollectorInfo(){
 		List<GarbageCollectorMXBean> garbages = ManagementFactory.getGarbageCollectorMXBeans();
 		for(GarbageCollectorMXBean garbage : garbages){
@@ -241,7 +242,7 @@ public class JvmInfo {
 		+garbage.getCollectionTime()+",内存区名称="+Arrays.deepToString(garbage.getMemoryPoolNames()));
 		}
 	}
-	
+
 	private static void printMemoryInfo(){
 		MemoryMXBean memory = ManagementFactory.getMemoryMXBean();
 		MemoryUsage headMemory = memory.getHeapMemoryUsage();
@@ -251,7 +252,7 @@ public class JvmInfo {
 		System.out.println("\t当前(已使用)(M):"+headMemory.getUsed()/MB);
 		System.out.println("\t提交的内存(已申请)(M):"+headMemory.getCommitted()/MB);
 		System.out.println("\t使用率:"+headMemory.getUsed()*100/headMemory.getCommitted()+"%");
-		
+
 		System.out.println("non-head非堆:");
 		MemoryUsage nonheadMemory = memory.getNonHeapMemoryUsage();
 		System.out.println("\t初始(M):"+nonheadMemory.getInit()/MB);
@@ -260,7 +261,7 @@ public class JvmInfo {
 		System.out.println("\t提交的内存(已申请)(M):"+nonheadMemory.getCommitted()/MB);
 		System.out.println("\t使用率:"+nonheadMemory.getUsed()*100/nonheadMemory.getCommitted()+"%");
 	}
-	
+
 	private static void printMemoryPoolInfo(){
 		List<MemoryPoolMXBean> pools = ManagementFactory.getMemoryPoolMXBeans();
 		if(pools != null && !pools.isEmpty()){
@@ -273,11 +274,11 @@ public class JvmInfo {
 						+"\n\t已用大小(M)="+pool.getUsage().getUsed()/MB
 						+"\n\t已提交(已申请)(M)="+pool.getUsage().getCommitted()/MB
 						+"\n\t使用率="+(pool.getUsage().getUsed()*100/pool.getUsage().getCommitted())+"%");
-			
+
 			}
 		}
 	}
-	
+
 	private static void printThreadInfo(){
 		ThreadMXBean thread = ManagementFactory.getThreadMXBean();
 		System.out.println("ObjectName="+thread.getObjectName());
@@ -285,7 +286,7 @@ public class JvmInfo {
 		System.out.println("峰值="+thread.getPeakThreadCount());
 		System.out.println("线程总数（被创建并执行过的线程总数）="+thread.getTotalStartedThreadCount());
 		System.out.println("当初仍活动的守护线程（daemonThread）总数="+thread.getDaemonThreadCount());
-		
+
 		//检查是否有死锁的线程存在
 		long[] deadlockedIds =  thread.findDeadlockedThreads();
 		if(deadlockedIds != null && deadlockedIds.length > 0){
@@ -308,9 +309,9 @@ public class JvmInfo {
 						+"\t\t\t\t\t"+threadInfo.getThreadId());
 			}
 		}
-		
+
 	}
-	
+
 	private static boolean isSunOsMBean(OperatingSystemMXBean operatingSystem) {
 		final String className = operatingSystem.getClass().getName();
 		return "com.sun.management.OperatingSystem".equals(className)
@@ -340,16 +341,16 @@ public class JvmInfo {
 - 栈的内存通常只有几百k，但是它决定了函数调用的深度；如果程序使用了很深的递归函数，而栈内存又非常小，此时很有可能发生栈溢出(java.lang.StackOverflowError)的情况。
 - 每一个线程都有独立的栈空间。如果想尽量多跑一些线程的话，就尽量将栈内存缩小，而不是增大。
 ## 堆<->非堆
-按照官方的说法：“Java 虚拟机具有一个堆，堆是运行时数据区域，所有类实例和数组的内存均从此处分配。堆是在 Java 虚拟机启动时创建的。”“在JVM中堆之外的内存称为非堆内存(Non-heap memory)”。可以看出JVM主要管理两种类型的内存：堆和非堆。简单来说堆就是Java代码可及的内存，是留给开发人员使用的；非堆就是JVM留给 自己用的，所以方法区、JVM内部处理或优化所需的内存(如JIT编译后的代码缓存)、每个类结构(如运行时常数池、字段和方法数据)以及方法和构造方法 的代码都在非堆内存中。 
+按照官方的说法：“Java 虚拟机具有一个堆，堆是运行时数据区域，所有类实例和数组的内存均从此处分配。堆是在 Java 虚拟机启动时创建的。”“在JVM中堆之外的内存称为非堆内存(Non-heap memory)”。可以看出JVM主要管理两种类型的内存：堆和非堆。简单来说堆就是Java代码可及的内存，是留给开发人员使用的；非堆就是JVM留给 自己用的，所以方法区、JVM内部处理或优化所需的内存(如JIT编译后的代码缓存)、每个类结构(如运行时常数池、字段和方法数据)以及方法和构造方法 的代码都在非堆内存中。
 
 Java 虚拟机管理堆之外的内存（称为非堆内存）。
 Java 虚拟机具有一个由所有线程共享的方法区。方法区属于非堆内存。它存储每个类结构，如运行时常数池、字段和方法数据，以及方法和构造方法的代码。它是在 Java 虚拟机启动时创建的。方法区在逻辑上属于堆，但 Java 虚拟机实现可以选择不对其进行回收或压缩。与堆类似，方法区的大小可以固定，也可以扩大和缩小。方法区的内存不需要是连续空间。除了方法区外，Java 虚拟机实现可能需要用于内部处理或优化的内存，这种内存也是非堆内存。例如，JIT 编译器需要内存来存储从 Java 虚拟机代码转换而来的本机代码，从而获得高性能。
 
-### 堆内存分配 
-JVM初始分配的内存由-Xms指定，默认是物理内存的1/64；JVM最大分配的内存由-Xmx指 定，默认是物理内存的1/4。默认空余堆内存小于40%时，JVM就会增大堆直到-Xmx的最大限制；空余堆内存大于70%时，JVM会减少堆直到 -Xms的最小限制。因此服务器一般设置-Xms、-Xmx相等以避免在每次GC 后调整堆的大小。 
+### 堆内存分配
+JVM初始分配的内存由-Xms指定，默认是物理内存的1/64；JVM最大分配的内存由-Xmx指 定，默认是物理内存的1/4。默认空余堆内存小于40%时，JVM就会增大堆直到-Xmx的最大限制；空余堆内存大于70%时，JVM会减少堆直到 -Xms的最小限制。因此服务器一般设置-Xms、-Xmx相等以避免在每次GC 后调整堆的大小。
 
-### 非堆内存分配 
-JVM使用-XX:PermSize设置非堆内存初始值，默认是物理内存的1/64；由XX:MaxPermSize设置最大非堆内存的大小，默认是物理内存的1/4。 
+### 非堆内存分配
+JVM使用-XX:PermSize设置非堆内存初始值，默认是物理内存的1/64；由XX:MaxPermSize设置最大非堆内存的大小，默认是物理内存的1/4。
 
 
 ## 内存设置参数
@@ -412,5 +413,41 @@ getEnclosingClass|获取匿名类或者内部类的立即封闭类|
 getEnclosingMethod|获取匿名类的立即封闭方法|
 getComponentType|数组类class获取元素的类型信息，普通类则返回空|
 getClassLoader|获取classLoader|
+
+# GC
+
+## GC Root
+
+在Java语言中，可作为GC Roots的对象包含以下几种：
+
+* 虚拟机栈(栈帧中的本地变量表)中引用的对象。(可以理解为:引用栈帧中的本地变量表的所有对象)
+* 方法区中静态属性引用的对象(可以理解为:引用方法区该静态属性的所有对象)
+* 方法区中常量引用的对象(可以理解为:引用方法区中常量的所有对象)
+* 本地方法栈中(Native方法)引用的对象(可以理解为:引用Native方法的所有对象)
+
+可以理解为:
+
+1. 首先第一种是虚拟机栈中的引用的对象，我们在程序中正常创建一个对象，对象会在堆上开辟一块空间，同时会将这块空间的地址作为引用保存到虚拟机栈中，如果对象生命周期结束了，那么引用就会从虚拟机栈中出栈，因此如果在虚拟机栈中有引用，就说明这个对象还是有用的，这种情况是最常见的。
+
+2. 第二种是我们在类中定义了全局的静态的对象，也就是使用了static关键字，由于虚拟机栈是线程私有的，所以这种对象的引用会保存在共有的方法区中，显然将方法区中的静态引用作为GC Roots是必须的。
+
+3. 第三种便是常量引用，就是使用了static final关键字，由于这种引用初始化之后不会修改，所以方法区常量池里的引用的对象也应该作为GC Roots。最后一种是在使用JNI技术时，有时候单纯的Java代码并不能满足我们的需求，我们可能需要在Java中调用C或C++的代码，因此会使用native方法，JVM内存中专门有一块本地方法栈，用来保存这些对象的引用，所以本地方法栈中引用的对象也会被作为GC Roots。
+
+**JVM之判断对象是否存活（引用计数算法、可达性分析算法，最终判定）**
+
+## finalize():
+
+即使在可达性分析算法中不可达的对象，也并非是“非死不可”的，这时候它们暂时处于“缓刑”阶段，要真正宣告一个对象死亡，至少要经历再次标记过程。标记的前提是对象在进行可达性分析后发现没有与GC Roots相连接的引用链。
+
+1.第一次标记并进行一次筛选。
+    筛选的条件是此对象是否有必要执行finalize()方法。
+    当对象没有覆盖finalize方法，或者finzlize方法已经被虚拟机调用过，虚拟机将这两种情况都视为“没有必要执行”，对象被回收。
+
+2.第二次标记
+    如果这个对象被判定为有必要执行finalize（）方法，那么这个对象将会被放置在一个名为：F-Queue的队列之中，并在稍后由一条虚拟机自动建立的、低优先级的Finalizer线程去执行。这里所谓的“执行”是指虚拟机会触发这个方法，但并不承诺会等待它运行结束。这样做的原因是，如果一个对象finalize（）方法中执行缓慢，或者发生死循环（更极端的情况），将很可能会导致F-Queue队列中的其他对象永久处于等待状态，甚至导致整个内存回收系统崩溃。
+    Finalize（）方法是对象脱逃死亡命运的最后一次机会，稍后GC将对F-Queue中的对象进行第二次小规模标记，如果对象要在finalize（）中成功拯救自己----只要重新与引用链上的任何的一个对象建立关联即可，譬如把自己赋值给某个类变量或对象的成员变量，那在第二次标记时它将移除出“即将回收”的集合。如果对象这时候还没逃脱，那基本上它就真的被回收了。
+
+流程图如下：
+![GC Fianlize](/images/2020/03/gc-finalize.jpg "Tip")
 
 
