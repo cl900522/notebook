@@ -36,3 +36,22 @@ prototype  |  该作用域将单一 bean 的定义限制在任意数量的对象
 request  |  该作用域将 bean 的定义限制为 HTTP 请求。只在 web-aware Spring ApplicationContext 的上下文中有效。
 session  |  该作用域将 bean 的定义限制为 HTTP 会话。 只在web-aware Spring ApplicationContext的上下文中有效。
 global-session  |  该作用域将 bean 的定义限制为全局 HTTP 会话。只在 web-aware Spring ApplicationContext 的上下文中有效。
+
+# 启动流程分析
+
+* ApplicationContext.refresh()函数进行初始化流程
+  * refreshBeanFactory调用BeanDefinitionReader读取locations的配置文件，载入配置
+  * invokeBeanFactoryPostProcessors 调用BeanFactoryPostProcessor执行工厂的初始化
+  * registerBeanPostProcessors实例化并注册BeanPostProcessor的定义类
+  * finishBeanFactoryInitialization调用preInstantiateSingletons对其他bean实例初始化
+* BeanFactory获取bean流程
+  * AbstractBeanFactory#doGetBean，先在注册的bean中查找，如果没有则创建bean
+  * AbstractAutowireCapableBeanFactory#createBean封装创建流程
+  * resolveBeforeInstantiation调用InstantiationAwareBeanPostProcessor的postProcessBeforeInstantiation创建代理对象执行实例化前的工作，可以创建一个代理对象，这样就不需要调用doCreateBean
+  * AbstractAutowireCapableBeanFactory#doCreateBean 调用创建bean
+    * AbstractAutowireCapableBeanFactory#populateBean 填充属性值（通过InstantiationAwareBeanPostProcessor的postProcessAfterInstantiation和postProcessPropertyValues）
+  * AbstractAutowireCapableBeanFactory#initializeBean初始化bean，
+    * 触发调用aware的接口函数；
+    * 触发BeanPostProcessor的postProcessBeforeInitialization的调用（ InitDestroyAnnotationBeanPostProcessor 触发@PostConstruct注解的函数调用）
+    * 触发afterPropertiesSet接口函数的调用
+    * 触发BeanPostProcessor的postProcessAfterInitialization的调用

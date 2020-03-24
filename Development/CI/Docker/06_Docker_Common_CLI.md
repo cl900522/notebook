@@ -11,7 +11,7 @@ docker run -d -p 2181:2181 --name zookeeper1 --restart always zookeeper
 # mysql
 docker run -d -p 3306:3306 --name mysql1 --restart always -e MYSQL_ROOT_PASSWORD=root -v /web/data/mysql1-data:/var/lib/mysql mysql --character-set-server=utf8 --collation-server=utf8_bin  --default-authentication-plugin=mysql_native_password
 
-docker run -d -p 3306:3306 --name mysql1 --restart always -e MYSQL_ROOT_PASSWORD=root -v /web/data/mysql1-data:/var/lib/mysql mysql --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci  --default-authentication-plugin=mysql_native_password
+docker run -d -p 3306:3306 --name mysql1 --restart always -e MYSQL_ROOT_PASSWORD=root -v /share/volume3/Temp/Docker/mysql:/var/lib/mysql mysql --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci  --default-authentication-plugin=mysql_native_password
 
 
 >从MySQL8.0 开始，默认的加密规则使用的是 caching_sha2_password,需要修改为默认的mysql_native_password，否则会导致登陆连接
@@ -29,7 +29,10 @@ docker run -d -p 6379:6379 --name redis1 --restart always -d -v /web/data/redis/
 
 # sonatype-work
 mkdir /web/data/sonatype-work && chown -R 200 /web/data/sonatype-work
-docker run -d -p 8081:8081 --restart always --name nexus -v /web/data/sonatype-work:/sonatype-work sonatype/nexus
+docker run -d -p 8081:8081 --restart always --name nexus -v /share/volume3/Temp/Docker/sonatype-work:/sonatype-work sonatype/nexus
+
+docker run -d -p 8081:8081 --restart always --name nexus -v /share/volume3/Temp/Docker/sonatype-work:/nexus-data sonatype/nexus3
+
 
 # portainer
 docker run -ti -d -p 2375:2375 --restart=always --name shipyard-proxy -v /var/run/docker.sock:/var/run/docker.sock -e PORT=2375 shipyard/docker-proxy:latest
