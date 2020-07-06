@@ -21,38 +21,191 @@ PROTOCOL http或者https协议（只有在Elasticsearch前面有https代理的�
 * BODY 一个JSON格式的请求主体（如果请求需要的话）
 
 ## 服务管理
+
 * 关闭
 
 ```sh
-curl -XPOST 'http://localhost:9200/_shutdown'
+POST _shutdown
 ```
 
 ## 服务状态查看
 
 * 集群健康
-  ```sh
-  GET /_cluster/health
-  ```
+```sh
+
+GET _cluster/health
+
+# 检查集群状态
+GET _cat/health
+
+#检查节点状态
+GET _cat/nodes?v
+
+# 查询所有索引
+GET /_cat/indices
+
+```
+
 status字段提供一个综合的指标来表示集群的的服务状况。三种颜色各自的含义：
 
-颜色|	意义|
-:--:|:---
-green|	所有主要分片和复制分片都可用|
-yellow|	所有主要分片可用，但不是所有复制分片都可用|
-red|	不是所有的主要分片都可用|
+|  颜色  | 意义                                       |
+| :----: | :----------------------------------------- |
+| green  | 所有主要分片和复制分片都可用               |
+| yellow | 所有主要分片可用，但不是所有复制分片都可用 |
+|  red   | 不是所有的主要分片都可用                   |
+
+## 分词测试
+
+指定分词器测试
+```sh
+POST _analyze
+{
+  "text": "xi fei jian",
+  "analyzer": "english"
+}
+```
+
+自定义分词器测试
+```sh
+GET _analyze
+{
+  "tokenizer": "standard",
+  "filter":["lowercase"],
+  "text": "2 running Quick brown-foxes leap over lazy dogs in the summer evening."
+}
+```
+
+指定基于某个索引的字段相同的分词器测试
+```sh
+POST goods/_analyze
+{
+  "field": "name",
+  "text": "xi fei jian"
+}
+```
+
+
 
 ## 索引管理
+
+* 查看
+
+```sh
+GET /goods
+```
+
+* 删除
+
+```sh
+DELETE /goods
+```
+
 * 创建
 
-创建一个叫做blogs的索引。默认情况下，一个索引被分配5个主分片，但是为了演示的目的，我们只分配3个主分片和一个复制分片（每个主分片都有一个复制分片）：
+创建一个叫做goods的索引。默认情况下，一个索引被分配5个主分片
+Es (<= 5) 支持每个索引创建多个mapping;但是从Es6开始，每个索引只能有一个mapping，创建索引是的入参，也不支持多个mapping。
+
 ```sh
-PUT /blogs
+# 语法Es<=5
+PUT /goods?pretty
 {
-   "settings" : {
-      "number_of_shards" : 3,
-      "number_of_replicas" : 1
-   }
+  "settings": {
+    "number_of_replicas": 1,
+    "number_of_shards": 10
+  },
+  "mappings": {
+    "map1"{
+      "properties": {
+        "name": {
+          "type": "text"
+        },
+        "adwords": {
+          "type": "text"
+        }
+      }
+    }
+    "map2" :{
+        "yn": {
+          "type": "boolean"
+        },
+        "created": {
+          "type": "date",
+          "format": "yyyy-MM-dd HH:mm:ss"
+        }
+    }
+  }
 }
+
+# 语法Es>=6
+PUT /goods
+{
+  "settings": {
+    "number_of_replicas": 1,
+    "number_of_shards": 10
+  },
+  "mappings": {
+      "properties": {
+        "name": {
+          "type": "text",
+          "fields": {
+            "wholeName": {
+              "type": "keyword",
+              "ignore_above": 100
+            }
+          }
+        },
+        "adwords": {
+          "type": "text"
+        },
+        "category": {
+          "type": "keyword"
+        },
+        "unit": {
+          "type": "keyword"
+        },
+        "quantity": {
+          "type": "double"
+        },
+        "price": {
+          "type": "double"
+        },
+        "yn": {
+          "type": "boolean"
+        },
+        "created": {
+          "type": "date",
+          "format": "yyyy-MM-dd HH:mm:ss"
+        }
+      }
+  }
+}
+
+#
+```
+
+## mapping管理
+
+* 查看
+```sh
+GET /goods/_mapping
+```
+
+* 新建或者修改
+```sh
+PUT /goods/_mapping
+{
+  "properties": {
+    "upc": {
+      "type": "keyword"
+    },
+    "modified": {
+      "type": "date",
+      "format": "yyyy-MM-dd HH:mm:ss"
+    }
+  }
+}
+
+
 ```
 
 ## 数据CRUD
@@ -60,7 +213,7 @@ PUT /blogs
 
 自增_id
 ```sh
-POST /website/blog/
+POST /goods/_doc/
 {
   "title": "My second blog entry",
   "text":  "Still trying this out...",
@@ -68,9 +221,10 @@ POST /website/blog/
 }
 ```
 
-指定_id
+指定_id创建（其实也可用来修改）
+
 ```sh
-PUT /megacorp/employee/2
+PUT /goods/_doc/2
 {
     "first_name" :  "Jane",
     "last_name" :   "Smith",
@@ -82,18 +236,23 @@ PUT /megacorp/employee/2
 
 想使用自定义的_id，告诉Elasticsearch应该在_index、_type、_id三者都不存在时才接受请求，否则创建失败
 ```sh
-PUT /website/blog/123?op_type=create
+PUT /goods/_doc/2?op_type=create
 { ... }
 
-PUT /website/blog/123/_create
+PUT /goods/_doc/2/_create
 { ... }
 ```
 
 * 更新
 
 乐观锁修改
+1. _version表示当前数据新的版本号；
+2. _seq_no其实和version同一个道理，一旦数据发生更改，数据也一直是累计的；
+3. _primary_term表示是由谁分配的，意思说如果文档在一个集群里面，文档肯定会被分配一个位置，_primary_term表示的就是一个位置；
+
+_seq_no和_primary_term是对_version的优化，7.X版本的ES默认使用这种方式控制版本，所以当在高并发环境下使用乐观锁机制修改文档时，要带上当前文档的_seq_no和_primary_term进行更新：
 ```sh
-PUT /website/blog/1?version=1 <1>
+PUT /goods/_doc/2?if_seq_no=5&if_primary_term=1
 {
   "title": "My first blog entry",
   "text":  "Starting to get the hang of this..."
@@ -106,7 +265,7 @@ Elasticsearch的查询字符串后面添加version_type=external来使用这些�
 
 外部版本号与之前说的内部版本号在处理的时候有些不同。它不再检查_version是否与请求中指定的一致，而是检查是否小于指定的版本。如果请求成功，外部版本号就会被存储到_version中。
 ```sh
-PUT /website/blog/2?version=5&version_type=external
+PUT /goods/_doc/2?version=5&version_type=external
 {
   "title": "My first external blog entry",
   "text":  "Starting to get the hang of this..."
@@ -118,44 +277,59 @@ PUT /website/blog/2?version=5&version_type=external
 文档是不可变的——它们不能被更改，只能被替换。update API必须遵循相同的规则。表面看来，我们似乎是局部更新了文档的位置，**内部却是像我们之前说的一样简单的使用update API处理相同的检索-修改-重建索引流程**，我们也减少了其他进程可能导致冲突的修改。
 
 最简单的update请求表单接受一个局部文档参数doc，它会合并到现有文档中——对象合并在一起，存在的标量字段被覆盖，新字段被添加。举个例子，我们可以使用以下请求为博客添加一个tags字段和一个views字段：
-```
-POST /website/blog/1/_update
+
+```sh
+
+# 也可以使用，但是不推荐
+POST /goods/_doc/2/_update
 {
-   "doc" : {
-      "tags" : [ "testing" ],
-      "views": 0
-   }
+  "doc": {
+    "subGoods":["1","3","4"]
+  }
+}
+
+# 新版语法推荐
+POST /goods/_update/2
+{
+  "doc": {
+    "subGoods":["1","3","4"]
+  }
 }
 ```
 
 * 检索
+
 ```sh
-GET /megacorp/employee/1
+GET /goods/_doc/2
 ```
 
 指定检索返回字段
-```sh
-GET /website/blog/123/_source
 
-GET /website/blog/123/_source=name,age
+```sh
+GET /goods/_doc/2?_source
+
+GET /goods/_doc/2?_source=name,subGoods
 ```
 
 检查存在
+>如果你想做的只是检查文档是否存在——你对内容完全不感兴趣——使用HEAD方法来代替GET。HEAD请求不会返回响应体，只有HTTP头
 
-如果你想做的只是检查文档是否存在——你对内容完全不感兴趣——使用HEAD方法来代替GET。HEAD请求不会返回响应体，只有HTTP头
 ```sh
-curl -i -XHEAD http://localhost:9200/website/blog/123
+HEAD /goods/_doc/2
 ```
 
 * 删除
+
 ```sh
-DELETE /megacorp/employee/1
+DELETE /goods/_doc/2
 ```
 
 ## DSL搜索
+
 * 条件搜索
+
 ```sh
-GET /megacorp/employee/_search
+GET /goods/_search
 {
     "query" : {
         "match" : {
@@ -178,8 +352,9 @@ GET /megacorp/employee/_search
 ```
 
 * 全文搜索
+
 ```sh
-GET /megacorp/employee/_search
+GET /goods/_search
 {
     "query" : {
         "match" : {
@@ -193,7 +368,7 @@ GET /megacorp/employee/_search
 
 确切的匹配若干个单词或者短语(phrases)
 ```sh
-GET /megacorp/employee/_search
+GET /goods/_search
 {
     "query" : {
         "match_phrase" : {
@@ -204,9 +379,11 @@ GET /megacorp/employee/_search
 ```
 
 ## 聚合分析
+
 * 条件过滤
+
 ```sh
-GET /megacorp/employee/_search
+GET /goods/_search
 {
   "query": {
     "match": {
