@@ -398,25 +398,3 @@ GET /goods/_search
     }
 }
 ```
-
-## 聚合分析
-
-* 条件过滤
-
-```sh
-GET /goods/_search
-{
-  "query": {
-    "match": {
-      "last_name": "smith"
-    }
-  },
-  "aggs": {
-    "all_interests": {
-      "terms": {
-        "field": "interests"
-      }
-    }
-  }
-}
-```
