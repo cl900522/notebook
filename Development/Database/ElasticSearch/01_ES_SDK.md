@@ -105,13 +105,24 @@ DELETE /goods
 创建一个叫做goods的索引。默认情况下，一个索引被分配5个主分片
 Es (<= 5) 支持每个索引创建多个mapping;但是从Es6开始，每个索引只能有一个mapping，创建索引是的入参，也不支持多个mapping。
 
+* number_of_shards: 是设置的分片数，设置之后无法更改！
+* refresh_interval: 是设置es缓存的刷新时间，如果写入较为频繁，但是查询对实时性要求不那么高的话，可以设置高一些来提升性能。-1表示关闭刷新，一个绝对值 1 表示的是 1毫秒
+* number_of_replicas : 是设置该索引库的副本数，建议设置为1以上。
+
+字段的设置参数参数:
+
+* store: true/false 表示该字段是否存储，默认存储。
+* doc_values: true/false 表示该字段是否参与聚合和排序。
+* index: true/false 表示该字段是否建立索引，默认建立。
+
 ```sh
 # 语法Es<=5
 PUT /goods?pretty
 {
   "settings": {
     "number_of_replicas": 1,
-    "number_of_shards": 10
+    "number_of_shards": 10,
+    "refresh_interval": "1s"
   },
   "mappings": {
     "map1"{
@@ -141,7 +152,8 @@ PUT /goods
 {
   "settings": {
     "number_of_replicas": 1,
-    "number_of_shards": 10
+    "number_of_shards": 10,
+    "refresh_interval": "2m"
   },
   "mappings": {
       "properties": {
@@ -155,7 +167,10 @@ PUT /goods
           }
         },
         "adwords": {
-          "type": "text"
+          "type": "text",
+          "doc_values": true,
+          "index": true,
+          "store": true
         },
         "category": {
           "type": "keyword"
@@ -322,6 +337,12 @@ HEAD /goods/_doc/2
 
 ```sh
 DELETE /goods/_doc/2
+```
+
+## 搜索
+
+```sh
+GET /goods/_search?q=name:娃哈哈&sort=created:desc
 ```
 
 ## DSL搜索
