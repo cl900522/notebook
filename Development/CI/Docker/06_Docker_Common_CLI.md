@@ -6,32 +6,33 @@ docker pull registry.docker-cn.com/canal/canal-server
 docker run -d -p 5000:5000 --restart always -v /web/data/registry:/tmp/registry --name registry registry
 
 # zookeeper
-docker run -d -p 2181:2181 --name zookeeper1 --restart always zookeeper
+docker run -d -p 2181:2181 --name zookeeper --restart always zookeeper
 
 # mysql
-docker run -d -p 3306:3306 --name mysql1 --restart always -e MYSQL_ROOT_PASSWORD=root -v /web/data/mysql1-data:/var/lib/mysql mysql --character-set-server=utf8 --collation-server=utf8_bin  --default-authentication-plugin=mysql_native_password
+docker run -d -p 3306:3306 --name mysql --restart always -e MYSQL_ROOT_PASSWORD=root -v /web/data/mysql1-data:/var/lib/mysql mysql --character-set-server=utf8 --collation-server=utf8_bin  --default-authentication-plugin=mysql_native_password
 
-docker run -d -p 3306:3306 --name mysql1 --restart always -e MYSQL_ROOT_PASSWORD=root -v /share/volume3/Temp/Docker/mysql:/var/lib/mysql mysql --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci  --default-authentication-plugin=mysql_native_password
+docker run -d -p 3306:3306 --name mysql --restart always -e MYSQL_ROOT_PASSWORD=root -v /share/volume2/Docker/mysql:/var/lib/mysql mysql --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci  --default-authentication-plugin=mysql_native_password
 
 
 >从MySQL8.0 开始，默认的加密规则使用的是 caching_sha2_password,需要修改为默认的mysql_native_password，否则会导致登陆连接
 
 # mongo
-docker run -d -p 27017:27017 --name mongo1 --restart always mongo
-docker run -d -p 27017:27017 --restart always -v /web/data/mongo1:/data/db --name mongo1 mongo
+mkdir /share/volume2/Docker/mongo
+docker run -d -p 27017:27017 --name mongo --restart always mongo
 
 
-docker run -d -p 27017:27017 --restart always -v /web/data/mongo1:/data/db --name mongo1 mongo --auth
+docker run -d -p 27017:27017 --restart always -v /share/volume2/Docker/mongo:/data/db --name mongo mongo --auth
 >开启权限认证，默认是关闭的
 
 # redis
-docker run -d -p 6379:6379 --name redis1 --restart always -d -v /web/data/redis/data:/data redis
+mkdir -p /share/volume2/Docker/redis
+docker run -d -p 6379:6379 --name redis --restart always -d -v /share/volume2/Docker/redis:/data redis
 
 # sonatype-work
 mkdir /web/data/sonatype-work && chown -R 200 /web/data/sonatype-work
 docker run -d -p 8081:8081 --restart always --name nexus -v /share/volume3/Temp/Docker/sonatype-work:/sonatype-work sonatype/nexus
 
-docker run -d -p 8081:8081 --restart always --name nexus -v /share/volume3/Temp/Docker/sonatype-work:/nexus-data sonatype/nexus3
+docker run -d -p 8081:8081 --restart always --name nexus -v /share/volume2/Docker/sonatype-work:/nexus-data sonatype/nexus3
 
 
 # portainer
@@ -43,7 +44,8 @@ docker pull webcenter/activemq
 docker run --name activemq -p 61616:61616 -e ACTIVEMQ_ADMIN_LOGIN=admin -e ACTIVEMQ_ADMIN_PASSWORD=admin123 --restart=always -d webcenter/activemq:latest
 
 # rabbit mq
-docker run -d --restart=always -v /web/data/rabbitmq:/var/lib/rabbitmq -e RABBITMQ_DEFAULT_USER=guest -e RABBITMQ_DEFAULT_PASS=guest --hostname my-rabbit --name rabbitmq -p 15672:15672 -p 5672:5672 rabbitmq:3-management
+mkdir -p /share/volume3/Docker/rabbitmq
+docker run -d --restart=always -v /share/volume3/Docker/rabbitmq:/var/lib/rabbitmq -e RABBITMQ_DEFAULT_USER=guest -e RABBITMQ_DEFAULT_PASS=guest --hostname my-rabbit --name rabbitmq -p 15672:15672 -p 5672:5672 rabbitmq:3-management
 
 # hadoop hdfs
 docker network create --subnet=172.19.0.0/16 hadoopNet
@@ -81,10 +83,11 @@ http.cors.allow-origin: "*"
 
 ```
 
-docker run -d --restart always --name elasticsearch -p 9200:9200 -p 9300:9300 -e "discovery.type=single-node"  -v /web/data/elasticsearch-head/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml -v /web/data/elasticsearch:/usr/share/elasticsearch/data elasticsearch
+docker run -d --restart always --name elasticsearch -p 9200:9200 -p 9300:9300 -e "discovery.type=single-node"  -v /share/volume2/Docker/elasticsearch/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml -v /share/volume2/Docker/elasticsearch/data:/usr/share/elasticsearch/data elasticsearch:7.8.0
 
 docker run -d --restart always --name elasticsearch-head -p 9100:9100 mobz/elasticsearch-head:5
 
+docker run -d --restart always --name kibana --link elasticsearch:7.8.0 -p 5601:5601 kibana:7.8.0
 
 ## 修复elasticsearch 9300端口问题
 
@@ -123,3 +126,15 @@ docker run --name canal-server -e canal.instance.master.address=192.168.100.200:
 
 # neo4j
 docker run --name neo4j -d -p 7474:7474 -p 7687:7687  -v /web/data/neo4j:/data  neo4j
+
+# jellyfin
+docker run -d \
+ --volume /share/volume3/Docker/jellyfin/config:/config \
+ --volume /share/volume3/Docker/jellyfin/cache:/cache \
+ --volume /share/volume1/HomeShare/Video:/media \
+ -p 8096:8096 \
+ --restart=unless-stopped \
+ --device /dev/dri/renderD128:/dev/dri/renderD128 \
+ --device /dev/dri/card0:/dev/dri/card0 \
+ --name jellyfin \
+ jellyfin/jellyfin
