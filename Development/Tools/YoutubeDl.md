@@ -3,7 +3,7 @@
 ## 安装
 
 ```sh
-npm install --upgrade youtube-dl
+npm -g install --upgrade youtube-dl
 ```
 
 ## 下载视频
