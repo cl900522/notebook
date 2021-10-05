@@ -80,11 +80,51 @@ IgnoreGroup = libvirt
 
 ```
 
+```sh
+
+#更新 archlinux-cn 的 PGP keys
+pacman -S archlinuxcn-keyring
+
+```
+
+```conf
+
+# /etc/pacman.conf
+# SigLevel option determines the level of trust required to install a package.
+
+# The SigLevel TrustAll option exists for debugging purposes and makes it very easy to trust keys that have not been verified. You should use TrustedOnly for all official repositories.
+
+SigLevel = Required DatabaseOptional
+SigLevel = Required DatabaseOptional TrustedOnly
+SigLevel = PackageRequired
+SigLevel = TrustAll
+
+```
+
 ### 网络工具
 
 ```sh
 
 pacman -S net-tools dnsutils inetutils iproute2
+
+
+```
+
+### 升级系统
+
+```sh
+
+# 替换pacman -Ssy
+pamac update
+
+```
+
+### 时区
+
+```sh
+
+# timedatectl set-local-rtc 1
+timedatectl set-local-rtc true
 
 ```
 
