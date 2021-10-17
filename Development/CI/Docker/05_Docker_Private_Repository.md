@@ -1,5 +1,6 @@
-Docker私有仓库
+Docker私有仓库和镜像
 =========
+
 # 关于
 官方的Docker hub是一个用于管理公共镜像的好地方，我们可以在上面找到我们想要的镜像，也可以把我们自己的镜像推送上去。但是，有时候，我们的使用场景需要我们拥有一个私有的镜像仓库用于管理我们自己的镜像。这个可以通过开源软件Registry来达成目的。
 
@@ -48,4 +49,29 @@ Registry服务默认会将上传的镜像保存在容器的/var/lib/registry，�
 可能会出现无法push镜像到私有仓库的问题。这是因为我们启动的registry服务不是安全可信赖的。这是我们需要修改docker的配置文件/etc/default/docker，添加下面的内容，
 ```shell
     DOCKER_OPTS="--insecure-registry xxx.xxx.xxx.xxx:5000"
+```
+
+# 镜像加速
+
+Ubuntu14.04、Debian7Wheezy
+
+```conf
+# /etc/default/docker
+
+DOCKER_OPTS="--registry-mirror=https://registry.docker-cn.com"
+
+```
+
+Ubuntu16.04+、Debian8+、CentOS7
+
+```json /etc/docker/daemon.json
+
+{"registry-mirrors":
+    [
+    "https://registry.docker-cn.com",
+    "http://hub-mirror.c.163.com",
+    "https://docker.mirrors.ustc.edu.cn"
+    ]
+}
+
 ```
